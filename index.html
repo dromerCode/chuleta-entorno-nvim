@@ -17,6 +17,9 @@
     --accent-strong: #085c50;
     --accent-soft: rgba(14, 122, 107, 0.1);
     --danger: #a4402a;
+    --git-add: #2e7d32;
+    --git-change: #9a6b00;
+    --git-del: #b3261e;
     --font-display: "JetBrains Mono", ui-monospace, monospace;
     --font-body: "Work Sans", system-ui, sans-serif;
     --font-mono: "JetBrains Mono", ui-monospace, monospace;
@@ -33,6 +36,9 @@
       --accent-strong: #7cf0d6;
       --accent-soft: rgba(52, 209, 180, 0.14);
       --danger: #ef8064;
+      --git-add: #6fd47a;
+      --git-change: #f0c24a;
+      --git-del: #ff8a75;
       color-scheme: dark;
     }
   }
@@ -47,6 +53,9 @@
     --accent-strong: #7cf0d6;
     --accent-soft: rgba(52, 209, 180, 0.14);
     --danger: #ef8064;
+    --git-add: #6fd47a;
+    --git-change: #f0c24a;
+    --git-del: #ff8a75;
     color-scheme: dark;
   }
 
@@ -62,7 +71,7 @@
   .wrap { max-width: 880px; margin: 0 auto; }
 
   h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
-  h3 { font-size: .9rem; margin: 18px 0 8px; }
+  h3 { font-size: 1rem; margin: 22px 0 10px; }
   a { color: var(--accent-strong); }
 
   header.top {
@@ -83,8 +92,8 @@
     gap: 12px;
     flex-wrap: wrap;
   }
-  header.top h1 { font-size: 1.05rem; margin: 0; }
-  header.top .tag { font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-mono); }
+  header.top h1 { font-size: 1.4rem; margin: 0; }
+  header.top .tag { font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono); }
   #search {
     width: 100%;
     margin-top: 10px;
@@ -108,7 +117,7 @@
   }
   nav.chips a {
     flex: 0 0 auto;
-    font-size: 0.78rem;
+    font-size: 0.82rem;
     font-family: var(--font-mono);
     text-decoration: none;
     color: var(--text-muted);
@@ -124,16 +133,15 @@
   .lede { padding-block: 18px 6px; }
   .lede p { color: var(--text-muted); max-width: 62ch; }
   .callout {
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--danger);
-    background: var(--surface);
+    border: 1px solid color-mix(in srgb, var(--danger) 35%, var(--border));
+    background: color-mix(in srgb, var(--danger) 7%, var(--surface));
     border-radius: 8px;
-    padding: 12px 14px;
+    padding: 14px 16px;
     font-size: 0.92rem;
     margin-block: 12px 12px;
   }
   .callout strong { color: var(--danger); }
-  .callout.news { border-left-color: var(--accent); }
+  .callout.news { border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); background: color-mix(in srgb, var(--accent) 7%, var(--surface)); }
   .callout.news strong { color: var(--accent-strong); }
   .callout ul { margin: 6px 0 0; padding-left: 18px; }
   .callout li { margin-block: 3px; }
@@ -149,18 +157,18 @@
     border-radius: 6px;
     padding: 1px 7px;
   }
-  section h2 { font-size: 1.05rem; margin: 0; }
+  section h2 { font-size: 1.25rem; margin: 0; }
   section .sub { color: var(--text-muted); font-size: 0.85rem; margin: -4px 0 12px; }
 
   .badge {
     font-family: var(--font-mono);
-    font-size: 0.66rem;
+    font-size: 0.72rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--accent-strong);
     border: 1px solid var(--accent);
     border-radius: 4px;
-    padding: 0 5px;
+    padding: 1px 7px;
     vertical-align: 1px;
     white-space: nowrap;
   }
@@ -192,7 +200,7 @@
   thead th {
     text-align: left;
     font-family: var(--font-mono);
-    font-size: 0.72rem;
+    font-size: 0.76rem;
     letter-spacing: 0.03em;
     text-transform: uppercase;
     color: var(--text-muted);
@@ -211,11 +219,11 @@
     border: 1px solid var(--border);
     border-bottom-width: 2px;
     border-radius: 6px;
-    padding: 1px 6px;
+    padding: 2px 7px;
     color: var(--text);
     white-space: nowrap;
   }
-  .then { color: var(--text-muted); font-size: 0.78em; margin: 0 3px; }
+  .then { color: var(--text-muted); font-size: 0.85em; margin: 0 3px; }
 
   code.inline, .codeblock { font-family: var(--font-mono); font-size: 0.85em; }
   .codeblock {
@@ -636,7 +644,7 @@ entorno-dev .
     <div class="head"><span class="num">09</span><h2>Git y LazyGit</h2><span class="badge">nuevo</span></div>
 
     <h3>Git en el margen</h3>
-    <p class="note" style="margin:0 0 8px">En los archivos de un repositorio, el margen marca lo que has cambiado desde el último commit: <strong style="color:#3fa34d">▎</strong> línea nueva, <strong style="color:#c9a227">▎</strong> línea cambiada, <strong style="color:#d0543a">▁</strong> líneas borradas.</p>
+    <p class="note" style="margin:0 0 8px">En los archivos de un repositorio, el margen marca lo que has cambiado desde el último commit: <strong style="color:var(--git-add)">▎</strong> línea nueva, <strong style="color:var(--git-change)">▎</strong> línea cambiada, <strong style="color:var(--git-del)">▁</strong> líneas borradas.</p>
     <div class="tcard twrap mb">
       <table>
         <thead><tr><th>Tecla</th><th>Acción</th></tr></thead>
