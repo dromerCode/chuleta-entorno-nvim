@@ -250,7 +250,7 @@
   <header class="top">
     <div class="row1">
       <h1>Chuleta Entorno-Nvim · DWEC</h1>
-      <span class="tag">tmux · neovim · git · npm · act. 30-09-2026</span>
+      <span class="tag">tmux · neovim · git · npm · act. 07-10-2026</span>
     </div>
     <input id="search" type="search" placeholder="Buscar un atajo o comando… (ej. “snippet”, “comentar”, “ejecutar”)" autocomplete="off">
     <nav class="chips">
@@ -259,10 +259,10 @@
       <a href="#tmux">Tmux</a>
       <a href="#menu" class="new">Menú Espacio</a>
       <a href="#snippets" class="new">Snippets</a>
-      <a href="#neovim">Neovim</a>
-      <a href="#ortografia" class="new">Ortografía</a>
+      <a href="#neovim" class="new">Neovim</a>
+      <a href="#ortografia">Ortografía</a>
       <a href="#explorador">Explorador</a>
-      <a href="#git">Git</a>
+      <a href="#git" class="new">Git</a>
       <a href="#npm">NPM</a>
       <a href="#problemas">Problemas</a>
     </nav>
@@ -274,12 +274,14 @@
       <strong>No es LazyVim.</strong> Usa el gestor de plugins Lazy, y el menú de <kbd>Espacio</kbd> está organizado al estilo LazyVim, pero la configuración, los atajos y el explorador (<strong>NvimTree</strong>) son propios de este repositorio. Hay dos teclas líder: <kbd>Ctrl</kbd><span class="then">+</span><kbd>a</kbd> para tmux y <kbd>Espacio</kbd> para Neovim. Los atajos con prefijo se pulsan en dos pasos, sin mantener nada pulsado.
     </div>
     <div class="callout news">
-      <strong>Novedades de finales de septiembre</strong>
+      <strong>Novedades del 7 de octubre</strong> <span class="then">(actualiza con</span> <code class="inline">./scripts/actualizar.sh</code><span class="then">)</span>
       <ul>
-        <li><kbd>Ctrl+j</kbd> en modo insertar abre o expande los snippets. <kbd>Espacio</kbd><span class="then">→</span><kbd>s</kbd> los lista con buscador.</li>
-        <li>Menú de <kbd>Espacio</kbd> reorganizado: <kbd>t</kbd> texto, <kbd>b</kbd> archivos abiertos, <kbd>r</kbd> ejecutar, <kbd>l</kbd> código, <kbd>o</kbd> ortografía. <strong>Duplicar línea pasa a ser</strong> <kbd>Espacio</kbd><span class="then">→</span><kbd>t</kbd><span class="then">→</span><kbd>d</kbd>.</li>
-        <li><kbd>Ctrl+/</kbd> comenta como en VS Code. El código se formatea solo al guardar.</li>
-        <li>Ayuda integrada con <kbd>Espacio</kbd><span class="then">→</span><kbd>?</kbd> o <kbd>F1</kbd>. Para actualizar: <code class="inline">./scripts/actualizar.sh</code>.</li>
+        <li>Búsquedas nuevas: <kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>r</kbd> recientes, <kbd>w</kbd> la palabra del cursor, <kbd>d</kbd> errores de todo el proyecto y <kbd>.</kbd> repetir la última búsqueda.</li>
+        <li><strong>Rodear</strong> texto con comillas, paréntesis o etiquetas: <kbd>sa</kbd> añadir, <kbd>sd</kbd> quitar, <kbd>sr</kbd> cambiar.</li>
+        <li>Más bloques de texto: <kbd>cia</kbd> argumento, <kbd>cif</kbd> llamada a función. <kbd>ci"</kbd> salta solo a las siguientes comillas de la línea.</li>
+        <li><strong>Git en el margen</strong>: marcas de líneas nuevas, cambiadas y borradas, <kbd>]h</kbd> / <kbd>[h</kbd> para saltar entre cambios y <kbd>Espacio</kbd><span class="then">→</span><kbd>g</kbd><span class="then">→</span><kbd>d</kbd> para verlos.</li>
+        <li><kbd>Espacio</kbd><span class="then">→</span><kbd>g</kbd><span class="then">→</span><kbd>g</kbd> encuentra el repositorio aunque esté en una subcarpeta, y ya no ofrece crear uno por error.</li>
+        <li>Snippets nuevos de DOM, <code class="inline">fetch</code>, arrays, tipos de TS y tests. La ayuda <kbd>F1</kbd> empieza con un bloque «Lo imprescindible».</li>
       </ul>
     </div>
   </div>
@@ -301,6 +303,7 @@
       <div class="ess-card"><div><kbd>Espacio</kbd><span class="then">→</span><kbd>g</kbd><span class="then">→</span><kbd>g</kbd> <span class="then">·</span> <kbd>Ctrl+a</kbd><span class="then">→</span><kbd>g</kbd></div><div class="action">Abrir LazyGit (Neovim · tmux)</div></div>
       <div class="ess-card"><div><kbd>gl</kbd> <span class="then">·</span> <kbd>]d</kbd> <span class="then">/</span> <kbd>[d</kbd></div><div class="action">Errores de la línea · siguiente / anterior</div></div>
       <div class="ess-card"><div><kbd>gd</kbd> <span class="then">/</span> <kbd>K</kbd></div><div class="action">Ir a definición / ver tipo y documentación</div></div>
+      <div class="ess-card"><div><kbd>gra</kbd></div><div class="action">Arreglar el error bajo el cursor (importar, etc.)</div></div>
       <div class="ess-card"><div><kbd>u</kbd> <span class="then">/</span> <kbd>Ctrl+r</kbd></div><div class="action">Deshacer / rehacer</div></div>
       <div class="ess-card"><div><kbd>ciw</kbd> <span class="then">/</span> <kbd>ci"</kbd></div><div class="action">Cambiar una palabra / texto entre comillas</div></div>
       <div class="ess-card"><div><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>h/j/k/l</kbd></div><div class="action">Moverse entre paneles de tmux</div></div>
@@ -426,12 +429,17 @@ entorno-dev .
           <tr class="row" data-s="archivo siguiente anterior buffer"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>b</kbd><span class="then">→</span><kbd>n</kbd> <span class="then">/</span> <kbd>p</kbd> <span class="then">·</span> <kbd>]b</kbd> <span class="then">/</span> <kbd>[b</kbd></td><td class="action">Archivo siguiente / anterior</td></tr>
           <tr class="row" data-s="cerrar archivo buffer"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>b</kbd><span class="then">→</span><kbd>d</kbd> <span class="then">/</span> <kbd>o</kbd></td><td class="action">Cerrar este archivo / cerrar los demás ya guardados</td></tr>
           <tr class="row" data-s="buscar archivo texto"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>f/g/b</kbd></td><td class="action">Buscar archivo / buscar texto / elegir archivo abierto</td></tr>
+          <tr class="row" data-s="archivos recientes historial fr"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>r</kbd></td><td class="action">Archivos recientes</td></tr>
+          <tr class="row" data-s="buscar palabra cursor proyecto fw grep"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>w</kbd></td><td class="action">Buscar en todo el proyecto la palabra que hay bajo el cursor</td></tr>
+          <tr class="row" data-s="errores todo el proyecto diagnosticos fd"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>d</kbd></td><td class="action">Errores de todo el proyecto, con buscador</td></tr>
+          <tr class="row" data-s="repetir ultima busqueda reanudar f punto"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>.</kbd></td><td class="action">Repetir la última búsqueda (vuelve a abrirla donde la dejaste)</td></tr>
           <tr class="row" data-s="buscador abrir dividir lado a lado derecha debajo vsplit split"><td><kbd>Ctrl+v</kbd> <span class="then">/</span> <kbd>Ctrl+s</kbd> <span class="then">(en el buscador)</span></td><td class="action">Abrir el resultado a la derecha / debajo en vez de con <kbd>Enter</kbd></td></tr>
           <tr class="row" data-s="explorador localizar archivo actual"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>e</kbd> <span class="then">/</span> <kbd>E</kbd></td><td class="action">Explorador al instante / localizar el archivo actual en el árbol</td></tr>
           <tr class="row" data-s="formato al guardar activar desactivar"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>u</kbd><span class="then">→</span><kbd>f</kbd></td><td class="action">Activar / desactivar el formato al guardar</td></tr>
           <tr class="row" data-s="tema cambiar theme"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>u</kbd><span class="then">→</span><kbd>t</kbd></td><td class="action">Cambiar de tema (Catppuccin, Tokyo Night, Kanagawa)</td></tr>
           <tr class="row" data-s="caracteres invisibles espacios tabuladores"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>u</kbd><span class="then">→</span><kbd>l</kbd></td><td class="action">Mostrar / ocultar caracteres invisibles</td></tr>
-          <tr class="row" data-s="lazygit"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>g</kbd><span class="then">→</span><kbd>g</kbd></td><td class="action">Abrir LazyGit</td></tr>
+          <tr class="row" data-s="lazygit repositorio subcarpeta"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>g</kbd><span class="then">→</span><kbd>g</kbd></td><td class="action">Abrir LazyGit. Si el repositorio está en una subcarpeta lo encuentra solo, y si hay varios te pregunta cuál</td></tr>
+          <tr class="row" data-s="ver cambios git codigo diff overlay"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>g</kbd><span class="then">→</span><kbd>d</kbd></td><td class="action">Ver dentro del código lo que has cambiado respecto a Git (otra vez para ocultarlo)</td></tr>
           <tr class="row" data-s="ia agente enviar seleccion"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>a</kbd><span class="then">→</span><kbd>c</kbd></td><td class="action">Enviar posición o selección al agente de IA (con <code class="inline">--ia</code>)</td></tr>
           <tr class="row" data-s="ayuda teclas f1"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>?</kbd> <span class="then">·</span> <kbd>F1</kbd></td><td class="action">Ayuda rápida (se cierra con <kbd>q</kbd> o <kbd>Esc</kbd>)</td></tr>
         </tbody>
@@ -461,8 +469,11 @@ entorno-dev .
         <thead><tr><th>Archivo</th><th>Prefijos útiles</th></tr></thead>
         <tbody>
           <tr class="row" data-s="html plantilla exclamacion div form"><td><code class="inline">.html</code></td><td class="action"><kbd>!</kbd> plantilla completa · <kbd>div</kbd> <kbd>section</kbd> <kbd>nav</kbd> <kbd>ul</kbd> <kbd>table</kbd> <kbd>form</kbd> <kbd>input</kbd> <kbd>img</kbd> <kbd>a</kbd> <kbd>link:css</kbd> <kbd>script:src</kbd> <kbd>meta:vp</kbd></td></tr>
-          <tr class="row" data-s="javascript js clg console log if for fn"><td><code class="inline">.js</code></td><td class="action"><kbd>clg</kbd> console.log · <kbd>if</kbd> <kbd>ife</kbd> <kbd>for</kbd> <kbd>forof</kbd> <kbd>while</kbd> <kbd>fn</kbd> <kbd>afn</kbd> <kbd>try</kbd> <kbd>imp</kbd> · <kbd>docfn</kbd> JSDoc</td></tr>
-          <tr class="row" data-s="typescript ts cabecera cabts"><td><code class="inline">.ts</code></td><td class="action">Lo mismo que JS y además <kbd>cabts</kbd> cabecera del archivo</td></tr>
+          <tr class="row" data-s="javascript js clg console log if for fn class export"><td><code class="inline">.js</code></td><td class="action"><kbd>clg</kbd> console.log · <kbd>if</kbd> <kbd>ife</kbd> <kbd>for</kbd> <kbd>forof</kbd> <kbd>while</kbd> <kbd>fn</kbd> <kbd>afn</kbd> <kbd>try</kbd> <kbd>imp</kbd> <kbd>exp</kbd> <kbd>expd</kbd> <kbd>class</kbd> · <kbd>docfn</kbd> JSDoc</td></tr>
+          <tr class="row" data-s="dom queryselector evento addeventlistener crear elemento domcontentloaded qs qsa ael ce dcl"><td>DOM <span class="badge">nuevo</span></td><td class="action"><kbd>qs</kbd> / <kbd>qsa</kbd> seleccionar uno / varios · <kbd>ael</kbd> escuchar evento · <kbd>ce</kbd> crear y añadir elemento · <kbd>dcl</kbd> al cargar el DOM</td></tr>
+          <tr class="row" data-s="datos fetch post localstorage map filter find reduce promesa settimeout lsg lss prom sto"><td>Datos <span class="badge">nuevo</span></td><td class="action"><kbd>fetch</kbd> con async/await · <kbd>post</kbd> enviar JSON · <kbd>lsg</kbd> / <kbd>lss</kbd> leer / guardar en localStorage · <kbd>map</kbd> <kbd>filter</kbd> <kbd>find</kbd> <kbd>reduce</kbd> · <kbd>prom</kbd> promesa · <kbd>sto</kbd> setTimeout</td></tr>
+          <tr class="row" data-s="tests vitest jest describe it desc"><td>Tests <span class="badge">nuevo</span></td><td class="action"><kbd>desc</kbd> bloque de tests · <kbd>it</kbd> un test (Vitest/Jest)</td></tr>
+          <tr class="row" data-s="typescript ts cabecera cabts interface type union enum generica as const int gfn asc"><td><code class="inline">.ts</code></td><td class="action">Todo lo de JS y además <kbd>cabts</kbd> cabecera del archivo · <kbd>int</kbd> interface · <kbd>type</kbd> alias · <kbd>union</kbd> unión de literales · <kbd>enum</kbd> · <kbd>gfn</kbd> función genérica · <kbd>asc</kbd> array <code class="inline">as const</code></td></tr>
           <tr class="row" data-s="react componente rafce jsx tsx"><td><code class="inline">.jsx</code> <code class="inline">.tsx</code></td><td class="action">Componentes React: <kbd>rafce</kbd> <kbd>rafc</kbd> <kbd>rfce</kbd> <kbd>rfc</kbd></td></tr>
           <tr class="row" data-s="css centrar flex grid media reset"><td><code class="inline">.css</code></td><td class="action"><kbd>centrar</kbd> <kbd>flex</kbd> <kbd>grid</kbd> <kbd>media</kbd> <kbd>vars</kbd> <kbd>reset</kbd> <kbd>trans</kbd> <kbd>anim</kbd> <kbd>tw</kbd></td></tr>
           <tr class="row" data-s="bash sh python docker compose"><td>Otros</td><td class="action">Bash (<kbd>cab</kbd> <kbd>menu</kbd> <kbd>getopts</kbd>…), Python (<kbd>main</kbd> <kbd>def</kbd> <kbd>class</kbd>…), Dockerfile (<kbd>node</kbd> <kbd>vite</kbd> <kbd>nginx</kbd>…) y <code class="inline">compose.yaml</code> (<kbd>compose</kbd> <kbd>mysql</kbd> <kbd>lamp</kbd>…)</td></tr>
@@ -472,7 +483,7 @@ entorno-dev .
   </section>
 
   <section id="neovim">
-    <div class="head"><span class="num">06</span><h2>Neovim: movimiento y edición</h2></div>
+    <div class="head"><span class="num">06</span><h2>Neovim: movimiento y edición</h2><span class="badge">nuevo</span></div>
 
     <h3>Básicos</h3>
     <div class="tcard twrap mb">
@@ -525,7 +536,25 @@ entorno-dev .
           <tr class="row" data-s="comillas dentro incluyendo ci"><td><kbd>i"</kbd> <span class="then">/</span> <kbd>a"</kbd></td><td class="action">Dentro de las comillas / incluyéndolas (también ' y `)</td></tr>
           <tr class="row" data-s="parentesis llaves bloque dentro incluyendo ci( ci{"><td><kbd>i{</kbd> <span class="then">/</span> <kbd>a{</kbd></td><td class="action">Dentro del bloque / incluyendo las llaves (también ( y [)</td></tr>
           <tr class="row" data-s="parrafo interior con linea blanco ip ap"><td><kbd>ip</kbd> <span class="then">/</span> <kbd>ap</kbd></td><td class="action">Párrafo interior / con la línea en blanco</td></tr>
-          <tr class="row" data-s="etiqueta html xml tag it at"><td><kbd>it</kbd> <span class="then">/</span> <kbd>at</kbd></td><td class="action">Contenido de una etiqueta HTML / la etiqueta completa</td></tr>
+          <tr class="row" data-s="etiqueta html xml tag it at cit"><td><kbd>it</kbd> <span class="then">/</span> <kbd>at</kbd></td><td class="action">Contenido de una etiqueta HTML / la etiqueta completa (<kbd>cit</kbd> cambia el texto de dentro)</td></tr>
+          <tr class="row" data-s="argumento parametro funcion cia ia aa"><td><kbd>ia</kbd> <span class="then">/</span> <kbd>aa</kbd> <span class="badge">nuevo</span></td><td class="action">Un argumento / con su coma: <kbd>cia</kbd> en <code class="inline">suma(a, |b)</code> deja <code class="inline">suma(a, )</code></td></tr>
+          <tr class="row" data-s="llamada funcion dentro parentesis cif if af"><td><kbd>if</kbd> <span class="then">/</span> <kbd>af</kbd> <span class="badge">nuevo</span></td><td class="action">Lo de dentro de una llamada a función / la llamada entera</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note" style="margin:-8px 0 16px"><kbd>ci"</kbd>, <kbd>ci(</kbd>, <kbd>cia</kbd>… ya no exigen estar dentro: si el cursor está antes, saltan a las siguientes comillas, paréntesis o argumento de la línea.</p>
+
+    <h3>Rodear: comillas, paréntesis y etiquetas <span class="badge">nuevo</span></h3>
+    <p class="note" style="margin:0 0 8px"><kbd>sa</kbd> añadir + qué rodear + con qué · <kbd>sd</kbd> quitar · <kbd>sr</kbd> cambiar uno por otro. Funciona con <kbd>"</kbd> <kbd>'</kbd> <kbd>`</kbd> <kbd>(</kbd> <kbd>[</kbd> <kbd>{</kbd> y <kbd>t</kbd> (etiqueta).</p>
+    <div class="tcard twrap mb">
+      <table>
+        <thead><tr><th>Tecla</th><th>Acción</th></tr></thead>
+        <tbody>
+          <tr class="row" data-s="rodear palabra comillas anadir surround saiw"><td><kbd>saiw"</kbd></td><td class="action">Rodear la palabra con comillas: <code class="inline">hola</code> → <code class="inline">"hola"</code></td></tr>
+          <tr class="row" data-s="quitar comillas rodean surround sd"><td><kbd>sd"</kbd></td><td class="action">Quitar las comillas que rodean al cursor</td></tr>
+          <tr class="row" data-s="cambiar comillas dobles simples surround sr"><td><kbd>sr"'</kbd></td><td class="action">Cambiar comillas dobles por simples</td></tr>
+          <tr class="row" data-s="rodear etiqueta html strong surround saiwt"><td><kbd>saiwt</kbd></td><td class="action">Rodear la palabra con una etiqueta (te pide el nombre: <code class="inline">strong</code>…)</td></tr>
+          <tr class="row" data-s="rodear lineas seleccion parentesis visual sa"><td><kbd>V</kbd> <span class="then">y luego</span> <kbd>sa)</kbd></td><td class="action">Rodear las líneas seleccionadas con paréntesis</td></tr>
         </tbody>
       </table>
     </div>
@@ -553,6 +582,8 @@ entorno-dev .
         <tbody>
           <tr class="row" data-s="error siguiente anterior aviso"><td><kbd>]d</kbd> <span class="then">/</span> <kbd>[d</kbd></td><td class="action">Error o aviso siguiente / anterior</td></tr>
           <tr class="row" data-s="errores linea gl"><td><kbd>gl</kbd></td><td class="action">Errores de esta línea</td></tr>
+          <tr class="row" data-s="errores todo el proyecto fd"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>d</kbd></td><td class="action">Errores de todo el proyecto, con buscador</td></tr>
+          <tr class="row" data-s="arreglar error importar code action gra"><td><kbd>gra</kbd></td><td class="action">Arreglar el error bajo el cursor: importar, corregir… (<kbd>Espacio</kbd><span class="then">→</span><kbd>l</kbd><span class="then">→</span><kbd>a</kbd>)</td></tr>
           <tr class="row" data-s="definicion declaracion volver"><td><kbd>gd</kbd> <span class="then">·</span> <kbd>Ctrl+o</kbd></td><td class="action">Ir a definición · volver donde estabas</td></tr>
           <tr class="row" data-s="documentacion hover k"><td><kbd>K</kbd> <span class="then">(dos veces)</span></td><td class="action">Tipo y documentación / entrar en la ventana para desplazarla</td></tr>
           <tr class="row" data-s="pliegue abrir cerrar bloque za"><td><kbd>za</kbd> <span class="then">·</span> <kbd>zc</kbd> <span class="then">/</span> <kbd>zo</kbd></td><td class="action">Abrir o cerrar el bloque · cerrar / abrir</td></tr>
@@ -564,7 +595,7 @@ entorno-dev .
   </section>
 
   <section id="ortografia">
-    <div class="head"><span class="num">07</span><h2>Ortografía</h2><span class="badge">nuevo</span></div>
+    <div class="head"><span class="num">07</span><h2>Ortografía</h2></div>
     <p class="sub">Español e inglés en Markdown, texto y mensajes de commit. Las faltas salen en rojo.</p>
     <div class="tcard twrap">
       <table>
@@ -602,8 +633,23 @@ entorno-dev .
   </section>
 
   <section id="git">
-    <div class="head"><span class="num">09</span><h2>Git y LazyGit</h2></div>
-    <p class="sub">Se abre con <kbd>Espacio</kbd><span class="then">→</span><kbd>g</kbd><span class="then">→</span><kbd>g</kbd> (Neovim), <kbd>l</kbd> desde el inicio, o <kbd>Ctrl+a</kbd><span class="then">→</span><kbd>g</kbd> (tmux).</p>
+    <div class="head"><span class="num">09</span><h2>Git y LazyGit</h2><span class="badge">nuevo</span></div>
+
+    <h3>Git en el margen</h3>
+    <p class="note" style="margin:0 0 8px">En los archivos de un repositorio, el margen marca lo que has cambiado desde el último commit: <strong style="color:#3fa34d">▎</strong> línea nueva, <strong style="color:#c9a227">▎</strong> línea cambiada, <strong style="color:#d0543a">▁</strong> líneas borradas.</p>
+    <div class="tcard twrap mb">
+      <table>
+        <thead><tr><th>Tecla</th><th>Acción</th></tr></thead>
+        <tbody>
+          <tr class="row" data-s="cambio siguiente anterior git hunk"><td><kbd>]h</kbd> <span class="then">/</span> <kbd>[h</kbd></td><td class="action">Ir al cambio siguiente / anterior</td></tr>
+          <tr class="row" data-s="deshacer cambio linea git reset hunk gHgh"><td><kbd>gHgh</kbd></td><td class="action">Deshacer el cambio de esta zona y dejarla como en el último commit</td></tr>
+          <tr class="row" data-s="ver cambios dentro codigo git diff overlay"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>g</kbd><span class="then">→</span><kbd>d</kbd></td><td class="action">Ver los cambios dentro del código (otra vez para ocultarlos)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>LazyGit</h3>
+    <p class="sub" style="margin-top:0">Se abre con <kbd>Espacio</kbd><span class="then">→</span><kbd>g</kbd><span class="then">→</span><kbd>g</kbd> (Neovim), <kbd>l</kbd> desde el inicio, o <kbd>Ctrl+a</kbd><span class="then">→</span><kbd>g</kbd> (tmux). Desde Neovim encuentra el repositorio aunque esté en una subcarpeta; si hay varios, pregunta cuál.</p>
     <div class="tcard twrap">
       <table>
         <thead><tr><th>Tecla</th><th>Acción</th></tr></thead>
@@ -647,6 +693,7 @@ npm run dev</div>
           <tr class="row" data-s="actualizar falla error reinstalar cero"><td>Algo sigue fallando tras actualizar</td><td class="action"><code class="inline">./scripts/instalar-alumno.sh --comprobar</code> y manda el mensaje al profe. Último recurso: mover <code class="inline">~/entorno-nvim</code> a <code class="inline">entorno-nvim.antiguo</code> y clonar de nuevo</td></tr>
           <tr class="row" data-s="servidor no instalado aviso lsp"><td>Aviso de que falta el servidor de un archivo</td><td class="action">Ejecuta <code class="inline">./scripts/actualizar.sh</code>: instala lo que falte</td></tr>
           <tr class="row" data-s="formato guardar cambia codigo"><td>Al guardar me cambia el formato del código</td><td class="action">Es el formato automático. <kbd>Espacio</kbd><span class="then">→</span><kbd>u</kbd><span class="then">→</span><kbd>f</kbd> lo desactiva</td></tr>
+          <tr class="row" data-s="lazygit no hay repositorio git init espacio gg"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>g</kbd><span class="then">→</span><kbd>g</kbd> dice «Aquí no hay ningún repositorio Git»</td><td class="action">Abre un archivo del proyecto y repite. Si de verdad quieres crear uno: <code class="inline">git init</code></td></tr>
           <tr class="row" data-s="volver pantalla inicio dashboard"><td>Quiero volver a la pantalla de inicio</td><td class="action"><kbd>:IFL</kbd></td></tr>
           <tr class="row" data-s="conservar procesos desconectar salir"><td>Quiero conservarlo todo al desconectarme</td><td class="action"><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>d</kbd> antes de salir</td></tr>
         </tbody>
@@ -657,7 +704,7 @@ npm run dev</div>
   <p id="empty" hidden>Sin resultados para esa búsqueda.</p>
 
   <footer>
-    Chuleta de clase DWEC (2º DAW) a partir del repo <code class="inline">entorno-nvim</code> del profesor Isaías Fernández Lozano, actualizada con los cambios hasta el 30-09-2026. No sustituye la documentación oficial del repositorio ni su ayuda integrada (<kbd>Espacio ?</kbd> / <kbd>F1</kbd> / <kbd>Ctrl+a ?</kbd> / <kbd>g?</kbd>).
+    Chuleta de clase DWEC (2º DAW) a partir del repo <code class="inline">entorno-nvim</code> del profesor Isaías Fernández Lozano, actualizada con los cambios hasta el 07-10-2026. No sustituye la documentación oficial del repositorio ni su ayuda integrada (<kbd>Espacio ?</kbd> / <kbd>F1</kbd> / <kbd>Ctrl+a ?</kbd> / <kbd>g?</kbd>).
   </footer>
 
 </div>
