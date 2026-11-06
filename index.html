@@ -332,8 +332,9 @@ cd entorno-nvim
 cd ~/entorno-nvim
 ./scripts/actualizar.sh
 
-<span class="c"># si tu copia es antigua y no tiene actualizar.sh (solo una vez)</span>
-git restore . &amp;&amp; git pull --ff-only &amp;&amp; sh scripts/actualizar.sh
+<span class="c"># si tu copia es antigua y no tiene actualizar.sh: revisa antes tus cambios</span>
+git status --short
+git pull --ff-only &amp;&amp; sh scripts/actualizar.sh
 
 <span class="c"># abrir un proyecto cada día</span>
 cd ~/ruta/de/mi-proyecto
@@ -439,7 +440,7 @@ entorno-dev .
           <tr class="row" data-s="buscar archivo texto"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>f/g/b</kbd></td><td class="action">Buscar archivo / buscar texto / elegir archivo abierto</td></tr>
           <tr class="row" data-s="archivos recientes historial fr"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>r</kbd></td><td class="action">Archivos recientes</td></tr>
           <tr class="row" data-s="buscar palabra cursor proyecto fw grep"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>w</kbd></td><td class="action">Buscar en todo el proyecto la palabra que hay bajo el cursor</td></tr>
-          <tr class="row" data-s="errores todo el proyecto diagnosticos fd"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>d</kbd></td><td class="action">Errores de todo el proyecto, con buscador</td></tr>
+          <tr class="row" data-s="errores todo el proyecto diagnosticos fd"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>d</kbd></td><td class="action">Diagnósticos disponibles del proyecto, con buscador</td></tr>
           <tr class="row" data-s="repetir ultima busqueda reanudar f punto"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>.</kbd></td><td class="action">Repetir la última búsqueda (vuelve a abrirla donde la dejaste)</td></tr>
           <tr class="row" data-s="buscador abrir dividir lado a lado derecha debajo vsplit split"><td><kbd>Ctrl+v</kbd> <span class="then">/</span> <kbd>Ctrl+s</kbd> <span class="then">(en el buscador)</span></td><td class="action">Abrir el resultado a la derecha / debajo en vez de con <kbd>Enter</kbd></td></tr>
           <tr class="row" data-s="explorador localizar archivo actual"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>e</kbd> <span class="then">/</span> <kbd>E</kbd></td><td class="action">Explorador al instante / localizar el archivo actual en el árbol</td></tr>
@@ -462,7 +463,7 @@ entorno-dev .
       <table>
         <thead><tr><th>Tecla</th><th>Acción</th></tr></thead>
         <tbody>
-          <tr class="row" data-s="ctrl j snippet expandir elegir plantilla"><td><kbd>Ctrl+j</kbd> <span class="then">(insertar)</span></td><td class="action">Expandir el snippet del prefijo o abrir el menú de snippets</td></tr>
+          <tr class="row" data-s="ctrl j snippet expandir elegir plantilla"><td><kbd>Ctrl+j</kbd> <span class="then">(insertar)</span></td><td class="action">Expandir una plantilla; en HTML/CSS también expande Emmet</td></tr>
           <tr class="row" data-s="espacio s plantillas lista buscador"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>s</kbd></td><td class="action">Lista de plantillas con buscador: escribe para filtrar y <kbd>Enter</kbd> inserta</td></tr>
           <tr class="row" data-s="campo siguiente anterior snippet"><td><kbd>Ctrl+l</kbd> <span class="then">/</span> <kbd>Ctrl+h</kbd></td><td class="action">Saltar al campo siguiente / anterior del snippet</td></tr>
           <tr class="row" data-s="terminar snippet esc"><td><kbd>Esc</kbd></td><td class="action">Terminar de rellenar el snippet</td></tr>
@@ -505,7 +506,7 @@ entorno-dev .
           <tr class="row" data-s="dividir dos archivos lado a lado derecha vsplit vertical split ventana"><td><kbd>:vs archivo</kbd> <span class="then">/</span> <kbd>:sp archivo</kbd></td><td class="action">Abrir otro archivo a la derecha / debajo del actual (<kbd>Tab</kbd> autocompleta la ruta)</td></tr>
           <tr class="row" data-s="ventanas splits neovim ctrl h j k l"><td><kbd>Ctrl+h/j/k/l</kbd> <span class="then">(normal)</span></td><td class="action">Moverse entre ventanas de Neovim</td></tr>
           <tr class="row" data-s="cerrar ventana split dividida"><td><kbd>:q</kbd> <span class="then">(en la ventana)</span></td><td class="action">Cerrar esa ventana dividida (el archivo sigue abierto en las demás)</td></tr>
-          <tr class="row" data-s="terminal salir modo terminal esc esc"><td><kbd>Esc</kbd> <kbd>Esc</kbd> <span class="then">(terminal)</span></td><td class="action">Salir del modo terminal de Neovim</td></tr>
+          <tr class="row" data-s="terminal salir modo terminal esc esc"><td><kbd>Esc</kbd> <kbd>Esc</kbd> <span class="then">(terminal)</span></td><td class="action">Salir del modo terminal de Neovim (:terminal); en la consola de tmux usa Ctrl+a → n para volver al editor</td></tr>
           <tr class="row" data-s="dashboard inicio ifl"><td><kbd>:IFL</kbd></td><td class="action">Volver a la pantalla de inicio</td></tr>
         </tbody>
       </table>
@@ -590,7 +591,7 @@ entorno-dev .
         <tbody>
           <tr class="row" data-s="error siguiente anterior aviso"><td><kbd>]d</kbd> <span class="then">/</span> <kbd>[d</kbd></td><td class="action">Error o aviso siguiente / anterior</td></tr>
           <tr class="row" data-s="errores linea gl"><td><kbd>gl</kbd></td><td class="action">Errores de esta línea</td></tr>
-          <tr class="row" data-s="errores todo el proyecto fd"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>d</kbd></td><td class="action">Errores de todo el proyecto, con buscador</td></tr>
+          <tr class="row" data-s="errores todo el proyecto fd"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>d</kbd></td><td class="action">Diagnósticos disponibles del proyecto, con buscador</td></tr>
           <tr class="row" data-s="arreglar error importar code action gra"><td><kbd>gra</kbd></td><td class="action">Arreglar el error bajo el cursor: importar, corregir… (<kbd>Espacio</kbd><span class="then">→</span><kbd>l</kbd><span class="then">→</span><kbd>a</kbd>)</td></tr>
           <tr class="row" data-s="definicion declaracion volver"><td><kbd>gd</kbd> <span class="then">·</span> <kbd>Ctrl+o</kbd></td><td class="action">Ir a definición · volver donde estabas</td></tr>
           <tr class="row" data-s="documentacion hover k"><td><kbd>K</kbd> <span class="then">(dos veces)</span></td><td class="action">Tipo y documentación / entrar en la ventana para desplazarla</td></tr>
@@ -644,13 +645,13 @@ entorno-dev .
     <div class="head"><span class="num">09</span><h2>Git y LazyGit</h2><span class="badge">nuevo</span></div>
 
     <h3>Git en el margen</h3>
-    <p class="note" style="margin:0 0 8px">En los archivos de un repositorio, el margen marca lo que has cambiado desde el último commit: <strong style="color:var(--git-add)">▎</strong> línea nueva, <strong style="color:var(--git-change)">▎</strong> línea cambiada, <strong style="color:var(--git-del)">▁</strong> líneas borradas.</p>
+    <p class="note" style="margin:0 0 8px">En los archivos de un repositorio, el margen marca los cambios respecto al área de preparación de Git (staging): <strong style="color:var(--git-add)">▎</strong> línea nueva, <strong style="color:var(--git-change)">▎</strong> línea cambiada, <strong style="color:var(--git-del)">▁</strong> líneas borradas.</p>
     <div class="tcard twrap mb">
       <table>
         <thead><tr><th>Tecla</th><th>Acción</th></tr></thead>
         <tbody>
           <tr class="row" data-s="cambio siguiente anterior git hunk"><td><kbd>]h</kbd> <span class="then">/</span> <kbd>[h</kbd></td><td class="action">Ir al cambio siguiente / anterior</td></tr>
-          <tr class="row" data-s="deshacer cambio linea git reset hunk gHgh"><td><kbd>gHgh</kbd></td><td class="action">Deshacer el cambio de esta zona y dejarla como en el último commit</td></tr>
+          <tr class="row" data-s="deshacer cambio linea git reset hunk gHgh"><td><kbd>gHgh</kbd></td><td class="action">Restablecer el bloque de cambios respecto al área de preparación de Git (staging)</td></tr>
           <tr class="row" data-s="ver cambios dentro codigo git diff overlay"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>g</kbd><span class="then">→</span><kbd>d</kbd></td><td class="action">Ver los cambios dentro del código (otra vez para ocultarlos)</td></tr>
         </tbody>
       </table>
@@ -664,7 +665,7 @@ entorno-dev .
         <tbody>
           <tr class="row" data-s="ayuda menu contextual lazygit"><td><kbd>?</kbd></td><td class="action">Menú de ayuda contextual</td></tr>
           <tr class="row" data-s="stage marcar archivo commit"><td><kbd>Espacio</kbd> <span class="then">(en archivos)</span></td><td class="action">Marcar / desmarcar para el commit (stage)</td></tr>
-          <tr class="row" data-s="commit hacer confirmar"><td><kbd>c</kbd></td><td class="action">Hacer commit (con corrector ortográfico)</td></tr>
+          <tr class="row" data-s="commit hacer confirmar"><td><kbd>c</kbd></td><td class="action">Abrir el diálogo de commit; C usa el editor externo</td></tr>
           <tr class="row" data-s="pull push subir bajar remoto"><td><kbd>p</kbd> <span class="then">/</span> <kbd>P</kbd></td><td class="action">Pull / push</td></tr>
           <tr class="row" data-s="stash guardar cambios temporal"><td><kbd>s</kbd></td><td class="action">Stash</td></tr>
           <tr class="row" data-s="salir volver quit"><td><kbd>q</kbd> <span class="then">/</span> <kbd>Esc</kbd></td><td class="action">Salir / volver</td></tr>
