@@ -4,8 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Chuleta Entorno-Nvim</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Work+Sans:wght@400;500;600&display=swap">
 <style>
-  /* Layout: una columna de chuleta con cabecera fija, buscador y chips de sección */
+  /* Layout: una columna; cabecera fija con buscador y nivel; tareas arriba, referencia por tareas debajo */
   :root {
     --bg: #eef2f0;
     --surface: #ffffff;
@@ -16,10 +19,16 @@
     --accent: #0e7a6b;
     --accent-strong: #085c50;
     --accent-soft: rgba(14, 122, 107, 0.1);
-    --danger: #a4402a;
+    --on-accent: #ffffff;
+    --mark: #ffe08a;
+    --mark-text: #14201b;
+    --warn: #a4402a;
     --git-add: #2e7d32;
     --git-change: #9a6b00;
     --git-del: #b3261e;
+    --pane-editor: #d8efe9;
+    --pane-term: #e8e2d2;
+    --pane-agent: #e3e0ef;
     --font-display: "JetBrains Mono", ui-monospace, monospace;
     --font-body: "Work Sans", system-ui, sans-serif;
     --font-mono: "JetBrains Mono", ui-monospace, monospace;
@@ -35,10 +44,16 @@
       --accent: #34d1b4;
       --accent-strong: #7cf0d6;
       --accent-soft: rgba(52, 209, 180, 0.14);
-      --danger: #ef8064;
+      --on-accent: #0b1714;
+      --mark: #6b5a17;
+      --mark-text: #fff6d6;
+      --warn: #ef8064;
       --git-add: #6fd47a;
       --git-change: #f0c24a;
       --git-del: #ff8a75;
+      --pane-editor: #173a33;
+      --pane-term: #33301f;
+      --pane-agent: #2c2a40;
       color-scheme: dark;
     }
   }
@@ -52,10 +67,16 @@
     --accent: #34d1b4;
     --accent-strong: #7cf0d6;
     --accent-soft: rgba(52, 209, 180, 0.14);
-    --danger: #ef8064;
+    --on-accent: #0b1714;
+    --mark: #6b5a17;
+    --mark-text: #fff6d6;
+    --warn: #ef8064;
     --git-add: #6fd47a;
     --git-change: #f0c24a;
     --git-del: #ff8a75;
+    --pane-editor: #173a33;
+    --pane-term: #33301f;
+    --pane-agent: #2c2a40;
     color-scheme: dark;
   }
 
@@ -66,38 +87,43 @@
     color: var(--text);
     font-family: var(--font-body);
     line-height: 1.5;
-    padding-inline: 16px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
   }
-  .wrap { max-width: 880px; margin: 0 auto; }
+  body::before {
+    content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+    z-index: 30; background: var(--bg);
+  }
+  .wrap { max-width: 900px; margin: 0 auto; }
 
   h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
-  h3 { font-size: 1rem; margin: 22px 0 10px; }
+  h3 { font-size: 0.98rem; margin: 0 0 8px; }
   a { color: var(--accent-strong); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+  /* Cabecera */
   header.top {
     position: sticky;
     top: env(safe-area-inset-top, 0px);
     z-index: 20;
-    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
     backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--border);
-    padding-block: 14px 10px;
-    margin-inline: -16px;
-    padding-inline: 16px;
+    padding-block: 12px 8px;
+    margin-left: calc(-1 * max(16px, env(safe-area-inset-left, 0px)));
+    margin-right: calc(-1 * max(16px, env(safe-area-inset-right, 0px)));
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
   }
-  header.top .row1 {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  header.top h1 { font-size: 1.4rem; margin: 0; }
-  header.top .tag { font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono); }
+  header.top .inner { max-width: 900px; margin: 0 auto; display: grid; gap: 8px; }
+  .row1 { display: flex; align-items: baseline; justify-content: space-between; gap: 4px 12px; flex-wrap: wrap; }
+  header.top h1 { font-size: 1.3rem; margin: 0; }
+  .tag { font-size: 0.76rem; color: var(--text-muted); font-family: var(--font-mono); }
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .searchbox { position: relative; flex: 1 1 260px; min-width: 0; }
   #search {
     width: 100%;
-    margin-top: 10px;
-    padding: 9px 12px;
+    padding: 9px 40px 9px 12px;
     border-radius: 8px;
     border: 1px solid var(--border);
     background: var(--surface);
@@ -106,126 +132,177 @@
     font-size: 0.95rem;
   }
   #search:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
-
-  nav.chips {
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    margin-top: 10px;
-    padding-bottom: 2px;
-    scrollbar-width: thin;
+  .searchbox .hint {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    pointer-events: none;
   }
+  .searchbox:focus-within .hint { display: none; }
+  .level { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--surface); }
+  .level button {
+    font: 600 0.85rem var(--font-body);
+    padding: 8px 12px;
+    border: 0;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+  .level button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+  #status { font-size: 0.8rem; color: var(--text-muted); min-height: 1.2em; margin: 0; }
+
+  nav.chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; }
   nav.chips a {
     flex: 0 0 auto;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     font-family: var(--font-mono);
     text-decoration: none;
     color: var(--text-muted);
     background: var(--surface-2);
     border: 1px solid var(--border);
-    padding: 5px 10px;
+    padding: 4px 10px;
     border-radius: 999px;
     white-space: nowrap;
   }
   nav.chips a:hover, nav.chips a:focus-visible { color: var(--accent-strong); border-color: var(--accent); }
-  nav.chips a.new { color: var(--accent-strong); border-color: var(--accent); background: var(--accent-soft); }
 
-  .lede { padding-block: 18px 6px; }
-  .lede p { color: var(--text-muted); max-width: 62ch; }
-  .callout {
-    border: 1px solid color-mix(in srgb, var(--danger) 35%, var(--border));
-    background: color-mix(in srgb, var(--danger) 7%, var(--surface));
-    border-radius: 8px;
-    padding: 14px 16px;
-    font-size: 0.92rem;
-    margin-block: 12px 12px;
+  /* Intro */
+  .lede { padding-block: 18px 4px; display: grid; gap: 12px; }
+  .lede > p { color: var(--text-muted); max-width: 66ch; margin: 0; }
+  .legend {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px;
+    border: 1px solid var(--border); background: var(--surface); border-radius: 10px; padding: 12px 14px;
+    font-size: 0.88rem;
   }
-  .callout strong { color: var(--danger); }
-  .callout.news { border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); background: color-mix(in srgb, var(--accent) 7%, var(--surface)); }
-  .callout.news strong { color: var(--accent-strong); }
-  .callout ul { margin: 6px 0 0; padding-left: 18px; }
-  .callout li { margin-block: 3px; }
+  .legend div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .legend p { margin: 0; }
+  .legend .action { color: var(--text-muted); }
+  details.news {
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+    background: color-mix(in srgb, var(--accent) 6%, var(--surface));
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+  }
+  details.news summary { cursor: pointer; font-weight: 600; color: var(--accent-strong); }
+  details.news h3 { margin: 12px 0 4px; font-size: 0.86rem; }
+  details.news ul { margin: 4px 0 0; padding-left: 18px; }
+  details.news li { margin-block: 3px; }
 
-  section { scroll-margin-top: 118px; margin-block: 30px; }
-  section .head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
-  section .num {
-    font-family: var(--font-mono);
-    color: var(--accent);
-    font-size: 0.85rem;
-    border: 1px solid var(--border);
-    background: var(--accent-soft);
-    border-radius: 6px;
-    padding: 1px 7px;
-  }
-  section h2 { font-size: 1.25rem; margin: 0; }
-  section .sub { color: var(--text-muted); font-size: 0.85rem; margin: -4px 0 12px; }
+  /* Secciones */
+  section { scroll-margin-top: 170px; margin-block: 34px; display: grid; gap: 14px; }
+  section .head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  section h2 { font-size: 1.22rem; margin: 0; }
+  section .sub { color: var(--text-muted); font-size: 0.88rem; margin: -6px 0 0; max-width: 70ch; }
+  .group { display: grid; gap: 8px; min-width: 0; }
+  .group > .note { margin: 0; }
 
   .badge {
     font-family: var(--font-mono);
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--accent-strong);
     border: 1px solid var(--accent);
     border-radius: 4px;
-    padding: 1px 7px;
+    padding: 0 6px;
     vertical-align: 1px;
     white-space: nowrap;
   }
 
-  .ess-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-    gap: 8px;
-  }
-  .ess-card {
+  /* Tareas */
+  .tasks { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 8px; }
+  .task {
     border: 1px solid var(--border);
     background: var(--surface);
     border-radius: 10px;
     padding: 10px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+    display: flex; flex-direction: column; gap: 6px;
+    min-width: 0;
+    text-decoration: none;
+    color: var(--text);
+  }
+  a.task:hover { border-color: var(--accent); }
+  .task .q { font-weight: 600; font-size: 0.92rem; }
+  @media (max-width: 560px) {
+    .tasks { grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); }
+    .task { padding: 9px 10px; }
+    .task .q { font-size: 0.86rem; }
+  }
+  .task .more { font-size: 0.78rem; color: var(--accent-strong); margin-top: auto; }
+
+  /* Primer día */
+  ol.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; counter-reset: paso; }
+  ol.steps li {
+    counter-increment: paso;
+    display: grid; grid-template-columns: 2rem 1fr; gap: 10px; align-items: start;
+    border: 1px solid var(--border); background: var(--surface); border-radius: 10px; padding: 10px 12px;
     min-width: 0;
   }
-  .ess-card .action { font-size: 0.86rem; color: var(--text-muted); }
-
-  .tcard {
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: var(--surface);
-    overflow: hidden;
+  ol.steps li::before {
+    content: counter(paso);
+    font: 700 0.95rem var(--font-mono);
+    color: var(--on-accent); background: var(--accent);
+    width: 2rem; height: 2rem; border-radius: 50%;
+    display: grid; place-items: center;
   }
+  ol.steps li > div { min-width: 0; }
+  ol.steps strong { display: block; }
+  ol.steps .action { color: var(--text-muted); font-size: 0.9rem; }
+
+  /* Esquemas */
+  .figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
+  figure { margin: 0; border: 1px solid var(--border); background: var(--surface); border-radius: 10px; padding: 12px; min-width: 0; }
+  figure svg { width: 100%; height: auto; display: block; }
+  .svgfig { min-height: 1px; }
+  figcaption { font-size: 0.84rem; color: var(--text-muted); margin-top: 8px; }
+  svg text { font-family: var(--font-mono); fill: var(--text); }
+  svg .t-muted { fill: var(--text-muted); }
+  svg .t-key { fill: var(--accent-strong); font-weight: 700; }
+  svg .p-editor { fill: var(--pane-editor); stroke: var(--border); }
+  svg .p-term { fill: var(--pane-term); stroke: var(--border); }
+  svg .p-agent { fill: var(--pane-agent); stroke: var(--border); }
+  svg .frame { fill: var(--surface-2); stroke: var(--border); }
+  svg .node { fill: var(--surface-2); stroke: var(--accent); stroke-width: 1.5; }
+  svg .node-main { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2; }
+  svg .arrow { stroke: var(--text-muted); stroke-width: 1.4; fill: none; }
+  svg .arrowhead { fill: var(--text-muted); }
+
+  /* Tablas */
+  .tcard { border: 1px solid var(--border); border-radius: 10px; background: var(--surface); overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
   thead th {
     text-align: left;
     font-family: var(--font-mono);
-    font-size: 0.76rem;
-    letter-spacing: 0.03em;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--text-muted);
     background: var(--surface-2);
-    padding: 8px 12px;
+    padding: 7px 12px;
   }
-  tbody td { padding: 9px 12px; border-top: 1px solid var(--border); vertical-align: top; }
+  tbody td { padding: 8px 12px; border-top: 1px solid var(--border); vertical-align: top; }
+  tbody td:first-child { white-space: nowrap; width: 1%; }
   tbody td.action { color: var(--text-muted); }
-  .twrap { overflow-x: auto; }
-  .mb { margin-bottom: 16px; }
+  tbody td.native { white-space: nowrap; width: 1%; }
+  @media (max-width: 560px) {
+    tbody td:first-child { white-space: normal; }
+  }
 
   kbd {
     font-family: var(--font-mono);
-    font-size: 0.83em;
+    font-size: 0.82em;
     background: var(--surface-2);
     border: 1px solid var(--border);
     border-bottom-width: 2px;
     border-radius: 6px;
-    padding: 2px 7px;
+    padding: 1px 6px;
     color: var(--text);
     white-space: nowrap;
   }
-  .then { color: var(--text-muted); font-size: 0.85em; margin: 0 3px; }
+  .then { color: var(--text-muted); font-size: 0.85em; margin: 0 2px; }
+  mark { background: var(--mark); color: var(--mark-text); border-radius: 3px; padding: 0 1px; }
 
   code.inline, .codeblock { font-family: var(--font-mono); font-size: 0.85em; }
+  .codewrap { position: relative; min-width: 0; }
   .codeblock {
     display: block;
     background: var(--surface-2);
@@ -235,11 +312,25 @@
     overflow-x: auto;
     white-space: pre;
     color: var(--text);
-    margin-bottom: 10px;
   }
   .codeblock .c { color: var(--text-muted); }
+  .copy {
+    position: absolute; top: 6px; right: 6px;
+    font: 600 0.75rem var(--font-body);
+    padding: 4px 9px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--text-muted);
+    cursor: pointer;
+  }
+  .copy:hover { color: var(--accent-strong); border-color: var(--accent); }
+  .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+  .two > div { min-width: 0; display: grid; gap: 8px; align-content: start; }
 
-  .note { font-size: 0.85rem; color: var(--text-muted); margin-top: 8px; }
+  .note { font-size: 0.85rem; color: var(--text-muted); }
+  .warn { color: var(--warn); font-weight: 600; }
+
+  /* Nivel básico: oculta lo avanzado salvo al buscar */
+  body.basico:not(.buscando) .row:not([data-b]) { display: none; }
+  body.basico:not(.buscando) .adv { display: none; }
 
   footer {
     border-top: 1px solid var(--border);
@@ -248,522 +339,744 @@
     color: var(--text-muted);
     font-size: 0.8rem;
   }
+  #empty { color: var(--text-muted); font-size: 0.95rem; padding: 20px 0; }
 
-  #empty { color: var(--text-muted); font-size: 0.9rem; padding: 20px 0; }
+  @media print {
+    header.top, .copy, #empty, body::before { display: none !important; }
+    body { background: #fff; color: #000; font-size: 11px; }
+    body.basico .row, body.basico .adv { display: revert !important; }
+    section { break-inside: avoid-page; margin-block: 14px; }
+    .tcard, .task, figure, ol.steps li { border-color: #bbb; }
+    details.news { display: none; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+  }
 </style>
 </head>
-<body>
+<body class="basico">
 <div class="wrap">
 
   <header class="top">
-    <div class="row1">
-      <h1>Chuleta Entorno-Nvim · DWEC</h1>
-      <span class="tag">tmux · neovim · git · npm · act. 15-11-2026</span>
+    <div class="inner">
+      <div class="row1">
+        <h1>Chuleta Entorno-Nvim · DWEC</h1>
+        <span class="tag">entorno-nvim v1.2.2 · act. 15-11-2026</span>
+      </div>
+      <div class="controls">
+        <div class="searchbox">
+          <input id="search" type="search" aria-label="Buscar un atajo" placeholder="¿Qué quieres hacer? (ej. «comentar», «deshacer», «ultimo commit»)" autocomplete="off">
+        </div>
+      </div>
+      <p id="status" aria-live="polite"></p>
+      <nav class="chips" aria-label="Secciones">
+        <a href="#tareas">Qué quieres hacer</a>
+        <a href="#primer-dia">Primer día</a>
+        <a href="#instalar">Instalar</a>
+        <a href="#pantalla">Pantalla y tmux</a>
+        <a href="#archivos">Archivos</a>
+        <a href="#moverse">Moverse</a>
+        <a href="#editar">Editar</a>
+        <a href="#snippets">Snippets</a>
+        <a href="#errores">Errores y código</a>
+        <a href="#guardar">Guardar y ejecutar</a>
+        <a href="#git">Git</a>
+        <a href="#markdown">Markdown y ortografía</a>
+        <a href="#problemas">Problemas</a>
+      </nav>
     </div>
-    <input id="search" type="search" placeholder="Buscar un atajo o comando… (ej. “snippet”, “comentar”, “ejecutar”)" autocomplete="off">
-    <nav class="chips">
-      <a href="#esenciales">Esenciales</a>
-      <a href="#arrancar" class="new">Arrancar</a>
-      <a href="#tmux">Tmux</a>
-      <a href="#menu" class="new">Menú Espacio</a>
-      <a href="#snippets" class="new">Snippets</a>
-      <a href="#neovim">Neovim</a>
-      <a href="#ortografia">Ortografía</a>
-      <a href="#explorador">Explorador</a>
-      <a href="#git" class="new">Git</a>
-      <a href="#npm">NPM</a>
-      <a href="#problemas">Problemas</a>
-    </nav>
   </header>
 
   <div class="lede">
-    <p>Atajos del entorno de clase de DWEC (<code class="inline">entorno-nvim</code>, el repo del profesor Isaías Fernández Lozano): tmux con Neovim, explorador de archivos y flujo de Git/NPM.</p>
-    <div class="callout">
-      <strong>No es LazyVim.</strong> Usa el gestor de plugins Lazy, y el menú de <kbd>Espacio</kbd> está organizado al estilo LazyVim, pero la configuración, los atajos y el explorador (<strong>NvimTree</strong>) son propios de este repositorio. Hay dos teclas líder: <kbd>Ctrl</kbd><span class="then">+</span><kbd>a</kbd> para tmux y <kbd>Espacio</kbd> para Neovim. Los atajos con prefijo se pulsan en dos pasos, sin mantener nada pulsado.
+    <p>Atajos del entorno de clase de DWEC (<code class="inline">entorno-nvim</code>, el repositorio del profesor Isaías Fernández Lozano): tmux con Neovim, explorador de archivos, Git y NPM. Está en modo <strong>Básico</strong>: pulsa <strong>Todo</strong> arriba para ver también los atajos avanzados. El buscador siempre busca en todo.</p>
+    <div class="legend">
+      <div><p class="k"><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>f</kbd></p><p class="action">Pulsa y suelta cada tecla, una detrás de otra.</p></div>
+      <div><p class="k"><kbd>Ctrl+v</kbd></p><p class="action">Mantén Ctrl y pulsa v a la vez.</p></div>
+      <div><p class="k"><kbd>Ctrl+a</kbd> <span class="then">y</span> <kbd>Espacio</kbd></p><p class="action">Ctrl+a manda en tmux (los paneles). Espacio manda en Neovim (el editor), en modo normal.</p></div>
     </div>
-    <div class="callout news">
-      <strong>Novedades de octubre y noviembre</strong> <span class="then">(actualiza con</span> <code class="inline">./scripts/actualizar.sh</code><span class="then">)</span>
+    <details class="news">
+      <summary>Novedades del entorno (última: v1.2.2, 15-11-2026)</summary>
+      <h3>v1.2 · 15-11-2026</h3>
       <ul>
-        <li><strong>Emmet</strong> en HTML y CSS con <kbd>Ctrl+j</kbd>: <code class="inline">ul&gt;li*3</code>, <code class="inline">p*5</code>, <code class="inline">p#nota$*5</code>… (sin el <code class="inline">&lt;</code> inicial). <kbd>!</kbd> sigue dando la plantilla HTML.</li>
-        <li><strong>Errores de HTML</strong> sin guardar: atributos mal escritos, ids repetidos, etiquetas desconocidas y cierres incorrectos. Se ven con <kbd>gl</kbd>.</li>
-        <li><strong>Leer Markdown</strong> con formato: <kbd>Espacio</kbd><span class="then">→</span><kbd>m</kbd><span class="then">→</span><kbd>r</kbd> el archivo actual, <kbd>Espacio</kbd><span class="then">→</span><kbd>m</kbd><span class="then">→</span><kbd>d</kbd> elegir documentación del proyecto (necesita <code class="inline">mdcat</code>).</li>
-        <li>TypeScript pone los <strong>puntos y coma</strong> que falten al guardar. <kbd>Espacio</kbd><span class="then">→</span><kbd>u</kbd><span class="then">→</span><kbd>f</kbd> lo desactiva.</li>
-        <li>Esta chuleta, desde Neovim: <kbd>F1</kbd> y luego <kbd>c</kbd> (dentro de tmux) o <kbd>w</kbd> (en el navegador).</li>
-        <li><code class="inline">entorno-dev .</code> abre la carpeta en la que estás, aunque sea una subcarpeta de un repositorio.</li>
-        <li>En el explorador, <kbd>p</kbd> ahora abre una <strong>vista previa</strong> del archivo (ya no pega). <code class="inline">:EntornoIconos 0</code> quita los iconos si te salen cuadros.</li>
-        <li>LazyGit muestra los cambios con colores y números de línea si tienes <code class="inline">git-delta</code> instalado (opcional).</li>
+        <li>En el explorador, <kbd>p</kbd> abre una <strong>vista previa</strong> del archivo sin salir del árbol. Ya no sirve para pegar.</li>
+        <li><code class="inline">:EntornoIconos</code> comprueba si tu fuente muestra los iconos. <code class="inline">:EntornoIconos 0</code> los quita si te salen cuadros.</li>
+        <li>Python se formatea al guardar (con Ruff), igual que JS o TS.</li>
+        <li>Instalación en una sola línea, también desde WSL2 (ver <a href="#instalar">Instalar</a>).</li>
+        <li>Pantalla de inicio nueva con la mascota Ifuru y la versión del entorno.</li>
       </ul>
-    </div>
+      <h3>Octubre y noviembre</h3>
+      <ul>
+        <li><strong>Emmet</strong> en HTML y CSS con <kbd>Ctrl+j</kbd>: <code class="inline">ul&gt;li*3</code>, <code class="inline">p*5</code>…</li>
+        <li><strong>Errores de HTML</strong> sin guardar (atributos mal escritos, ids repetidos, cierres incorrectos). Se ven con <kbd>gl</kbd>.</li>
+        <li><strong>Leer Markdown</strong> con formato: <kbd>Espacio</kbd><span class="then">→</span><kbd>m</kbd><span class="then">→</span><kbd>r</kbd> y <kbd>Espacio</kbd><span class="then">→</span><kbd>m</kbd><span class="then">→</span><kbd>d</kbd>.</li>
+        <li>TypeScript añade los <strong>puntos y coma</strong> que falten al guardar.</li>
+        <li>Esta chuleta, desde Neovim: <kbd>F1</kbd> y luego <kbd>c</kbd> (en tmux) o <kbd>w</kbd> (en el navegador).</li>
+        <li><code class="inline">entorno-dev .</code> abre la carpeta en la que estás, aunque sea una subcarpeta de un repositorio.</li>
+      </ul>
+    </details>
   </div>
 
-  <section id="esenciales">
-    <div class="head"><span class="num">01</span><h2>Comandos más importantes</h2></div>
-    <p class="sub">Lo que se usa todos los días. El resto de secciones son para cuando necesites algo más concreto.</p>
-    <div class="ess-grid">
-      <div class="ess-card"><div><kbd>Espacio</kbd><span class="then">→</span><kbd>w</kbd></div><div class="action">Guardar (y formatear)</div></div>
-      <div class="ess-card"><div><kbd>Espacio</kbd> <span class="then">y esperar</span></div><div class="action">Menú con todas las acciones</div></div>
-      <div class="ess-card"><div><kbd>Espacio</kbd><span class="then">→</span><kbd>?</kbd> <span class="then">·</span> <kbd>F1</kbd></div><div class="action">Ayuda rápida de teclas</div></div>
-      <div class="ess-card"><div><kbd>Ctrl+j</kbd> <span class="then">(insertar)</span></div><div class="action">Elegir o expandir un snippet</div></div>
-      <div class="ess-card"><div><kbd>Espacio</kbd><span class="then">→</span><kbd>s</kbd></div><div class="action">Lista de plantillas con buscador</div></div>
-      <div class="ess-card"><div><kbd>Espacio</kbd><span class="then">→</span><kbd>r</kbd></div><div class="action">Ejecutar el archivo en la terminal de abajo</div></div>
-      <div class="ess-card"><div><kbd>Ctrl+/</kbd></div><div class="action">Comentar línea o selección</div></div>
-      <div class="ess-card"><div><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>f</kbd> <span class="then">/</span> <kbd>g</kbd></div><div class="action">Buscar archivo / texto en el proyecto</div></div>
-      <div class="ess-card"><div><kbd>Espacio</kbd><span class="then">→</span><kbd>e</kbd></div><div class="action">Mostrar / ocultar explorador</div></div>
-      <div class="ess-card"><div><kbd>Ctrl+v</kbd> <span class="then">(explorador o buscador)</span></div><div class="action">Abrir el archivo a la derecha del actual</div></div>
-      <div class="ess-card"><div><kbd>Espacio</kbd><span class="then">→</span><kbd>g</kbd><span class="then">→</span><kbd>g</kbd> <span class="then">·</span> <kbd>Ctrl+a</kbd><span class="then">→</span><kbd>g</kbd></div><div class="action">Abrir LazyGit (Neovim · tmux)</div></div>
-      <div class="ess-card"><div><kbd>gl</kbd> <span class="then">·</span> <kbd>]d</kbd> <span class="then">/</span> <kbd>[d</kbd></div><div class="action">Errores de la línea · siguiente / anterior</div></div>
-      <div class="ess-card"><div><kbd>gd</kbd> <span class="then">/</span> <kbd>K</kbd></div><div class="action">Ir a definición / ver tipo y documentación</div></div>
-      <div class="ess-card"><div><kbd>gra</kbd></div><div class="action">Arreglar el error bajo el cursor (importar, etc.)</div></div>
-      <div class="ess-card"><div><kbd>u</kbd> <span class="then">/</span> <kbd>Ctrl+r</kbd></div><div class="action">Deshacer / rehacer</div></div>
-      <div class="ess-card"><div><kbd>ciw</kbd> <span class="then">/</span> <kbd>ci"</kbd></div><div class="action">Cambiar una palabra / texto entre comillas</div></div>
-      <div class="ess-card"><div><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>h/j/k/l</kbd></div><div class="action">Moverse entre paneles de tmux</div></div>
-      <div class="ess-card"><div><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>d</kbd> <span class="then">/</span> <kbd>Q</kbd></div><div class="action">Salir sin cerrar nada / cerrar el proyecto entero</div></div>
+  <section id="tareas">
+    <div class="head"><h2>¿Qué quieres hacer?</h2></div>
+    <p class="sub">Lo de todos los días. Toca una tarjeta para ir a su sección.</p>
+    <div class="tasks">
+      <a class="task" href="#guardar" data-s="guardar formatear"><span class="q">Guardar</span><span><kbd>Espacio</kbd><span class="then">→</span><kbd>w</kbd></span><span class="more">Guardar y ejecutar →</span></a>
+      <a class="task" href="#editar" data-s="escribir insertar salir modo normal esc"><span class="q">Escribir / dejar de escribir</span><span><kbd>i</kbd> <span class="then">·</span> <kbd>Esc</kbd> <span class="then">o</span> <kbd>jk</kbd></span><span class="more">Editar →</span></a>
+      <a class="task" href="#editar" data-s="deshacer rehacer undo"><span class="q">Deshacer / rehacer</span><span><kbd>u</kbd> <span class="then">/</span> <kbd>Ctrl+r</kbd></span><span class="more">Editar →</span></a>
+      <a class="task" href="#editar" data-s="comentar linea seleccion"><span class="q">Comentar línea o selección</span><span><kbd>Ctrl+/</kbd></span><span class="more">Editar →</span></a>
+      <a class="task" href="#editar" data-s="copiar pegar cortar linea"><span class="q">Copiar / cortar / pegar una línea</span><span><kbd>yy</kbd> <span class="then">/</span> <kbd>dd</kbd> <span class="then">→</span> <kbd>p</kbd></span><span class="more">Editar →</span></a>
+      <a class="task" href="#archivos" data-s="abrir buscar archivo"><span class="q">Abrir un archivo por su nombre</span><span><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>f</kbd></span><span class="more">Archivos →</span></a>
+      <a class="task" href="#archivos" data-s="buscar texto proyecto grep"><span class="q">Buscar un texto en todo el proyecto</span><span><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>g</kbd></span><span class="more">Archivos →</span></a>
+      <a class="task" href="#archivos" data-s="explorador arbol carpetas crear archivo"><span class="q">Ver carpetas, crear archivos</span><span><kbd>Espacio</kbd><span class="then">→</span><kbd>e</kbd> <span class="then">y luego</span> <kbd>a</kbd></span><span class="more">Archivos →</span></a>
+      <a class="task" href="#snippets" data-s="snippet plantilla emmet html"><span class="q">Insertar una plantilla o Emmet</span><span><kbd>Ctrl+j</kbd> <span class="then">(escribiendo)</span></span><span class="more">Snippets →</span></a>
+      <a class="task" href="#errores" data-s="error ver mensaje arreglar"><span class="q">Ver y arreglar un error</span><span><kbd>gl</kbd> <span class="then">·</span> <kbd>gra</kbd></span><span class="more">Errores y código →</span></a>
+      <a class="task" href="#guardar" data-s="ejecutar archivo correr"><span class="q">Ejecutar el archivo</span><span><kbd>Espacio</kbd><span class="then">→</span><kbd>r</kbd></span><span class="more">Guardar y ejecutar →</span></a>
+      <a class="task" href="#git" data-s="commit git lazygit subir"><span class="q">Hacer un commit</span><span><kbd>Espacio</kbd><span class="then">→</span><kbd>g</kbd><span class="then">→</span><kbd>g</kbd></span><span class="more">Git →</span></a>
+      <a class="task" href="#pantalla" data-s="terminal panel ir"><span class="q">Ir a la terminal de abajo y volver</span><span><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>t</kbd> <span class="then">/</span> <kbd>n</kbd></span><span class="more">Pantalla y tmux →</span></a>
+      <a class="task" href="#errores" data-s="ayuda teclas menu"><span class="q">No me acuerdo de una tecla</span><span><kbd>Espacio</kbd> <span class="then">y esperar</span> <span class="then">·</span> <kbd>F1</kbd></span><span class="more">Ayuda →</span></a>
+      <a class="task" href="#pantalla" data-s="salir cerrar proyecto"><span class="q">Salir</span><span><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>d</kbd> <span class="then">/</span> <kbd>Q</kbd></span><span class="more">Pantalla y tmux →</span></a>
     </div>
   </section>
 
-  <section id="arrancar">
-    <div class="head"><span class="num">02</span><h2>Instalar, actualizar y arrancar</h2></div>
-    <p class="sub">En Windows, todo dentro de WSL2/Ubuntu y en tu carpeta <code class="inline">~</code>, nunca en <code class="inline">/mnt/c</code>.</p>
-    <div class="codeblock"><span class="c"># primera vez (perfil único: web, React, Tailwind, Bash, Python y Docker)</span>
-cd ~
-git clone https://github.com/isaiasfl/entorno-nvim.git
-cd entorno-nvim
-./scripts/instalar-alumno.sh
+  <section id="primer-dia">
+    <div class="head"><h2>Primer día</h2></div>
+    <p class="sub">En este orden, y ya puedes trabajar.</p>
+    <ol class="steps">
+      <li><div><strong>Instálalo una vez</strong><span class="action">Con el comando de una línea de <a href="#instalar">Instalar</a>. En Windows, dentro de Ubuntu (WSL2).</span></div></li>
+      <li><div><strong>Abre tu proyecto</strong><span class="action"><code class="inline">cd</code> a la carpeta del proyecto y escribe <code class="inline">entorno-dev .</code></span></div></li>
+      <li><div><strong>Ubícate en la pantalla</strong><span class="action">Arriba el editor, abajo una terminal. <kbd>Ctrl+a</kbd><span class="then">→</span><kbd>t</kbd> te lleva a la terminal y <kbd>Ctrl+a</kbd><span class="then">→</span><kbd>n</kbd> te devuelve al editor.</span></div></li>
+      <li><div><strong>Escribe y guarda</strong><span class="action"><kbd>i</kbd> para escribir, <kbd>Esc</kbd> para parar, <kbd>Espacio</kbd><span class="then">→</span><kbd>w</kbd> para guardar (también formatea).</span></div></li>
+      <li><div><strong>Sal sin perder nada</strong><span class="action"><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>d</kbd> te saca y lo deja todo abierto. Mañana, <code class="inline">entorno-dev .</code> lo recupera tal cual.</span></div></li>
+    </ol>
+  </section>
 
-<span class="c"># actualizar (guarda antes tu trabajo)</span>
-cd ~/entorno-nvim
-./scripts/actualizar.sh
+  <section id="instalar">
+    <div class="head"><h2>Instalar, actualizar y abrir</h2></div>
+    <p class="sub">Siempre en una terminal de Linux. En Windows, la de Ubuntu (WSL2), en tu carpeta <code class="inline">~</code> y nunca en <code class="inline">/mnt/c</code> ni en PowerShell.</p>
+    <div class="two">
+      <div>
+        <h3>Linux</h3>
+        <div class="codeblock"><span class="c"># instalar (o actualizar si ya lo tienes)</span>
+curl -fsSL https://raw.githubusercontent.com/isaiasfl/entorno-nvim/main/install.sh | bash</div>
+      </div>
+      <div>
+        <h3>Windows 11 (WSL2)</h3>
+        <div class="codeblock"><span class="c"># 1. en PowerShell como administrador (y reinicia)</span>
+wsl --install -d Ubuntu
 
-<span class="c"># si tu copia es antigua y no tiene actualizar.sh (solo una vez)</span>
-git pull --ff-only
-sh scripts/actualizar.sh
-
-<span class="c"># abrir un proyecto cada día</span>
+<span class="c"># 2. dentro de Ubuntu, el mismo comando que en Linux</span>
+curl -fsSL https://raw.githubusercontent.com/isaiasfl/entorno-nvim/main/install.sh | bash</div>
+      </div>
+    </div>
+    <p class="note">Se instala en <code class="inline">~/entorno-nvim</code> y al terminar abre una terminal nueva con <code class="inline">entorno-dev</code> listo. Ubuntu te pedirá un usuario y contraseña de Linux: no son los de Windows.</p>
+    <div class="group">
+      <h3>Cada día</h3>
+      <div class="codeblock"><span class="c"># abrir un proyecto</span>
 cd ~/ruta/de/mi-proyecto
 entorno-dev .
 
+<span class="c"># actualizar el entorno (guarda antes tu trabajo)</span>
+cd ~/entorno-nvim
+./scripts/actualizar.sh
+
 <span class="c"># si algo falla: copia el mensaje y mándaselo al profe</span>
 ./scripts/instalar-alumno.sh --comprobar</div>
-    <div class="tcard twrap">
-      <table>
-        <thead><tr><th>Opción de entorno-dev</th><th>Uso</th></tr></thead>
-        <tbody>
-          <tr class="row" data-s="ia agente inteligencia artificial panel"><td><kbd>--ia</kbd></td><td class="action">Añade el panel de agente de IA</td></tr>
-          <tr class="row" data-s="sin ia editor terminal sin panel"><td><kbd>--sin-ia</kbd></td><td class="action">Editor y terminal sin panel de IA</td></tr>
-          <tr class="row" data-s="sin tmux solo neovim"><td><kbd>--sin-tmux</kbd></td><td class="action">Abre solo Neovim, sin tmux</td></tr>
-          <tr class="row" data-s="elegir selector proyectos"><td><kbd>--elegir</kbd></td><td class="action">Selector de proyectos conocidos</td></tr>
-        </tbody>
-      </table>
     </div>
-    <p class="note"><code class="inline">entorno-dev .</code> abre justo la carpeta en la que estás (antes subía hasta la raíz del repositorio). Si <code class="inline">git pull --ff-only</code> se para, es que tienes cambios propios en la copia del entorno: guárdalos antes de seguir, no los borres a ciegas. Ya no hace falta <code class="inline">--perfil dwec</code>: se acepta, pero instala lo mismo. Si reinstalas en otra carpeta, <code class="inline">entorno-dev</code> se redirige solo a la copia nueva.</p>
+    <div class="group adv">
+      <h3>Opciones de entorno-dev</h3>
+      <div class="tcard">
+        <table>
+          <thead><tr><th>Opción</th><th>Uso</th></tr></thead>
+          <tbody>
+            <tr class="row" data-s="ia agente inteligencia artificial panel"><td><kbd>--ia</kbd></td><td class="action">Añade el panel de agente de IA a la derecha</td></tr>
+            <tr class="row" data-s="sin ia editor terminal sin panel"><td><kbd>--sin-ia</kbd></td><td class="action">Editor y terminal, sin panel de IA</td></tr>
+            <tr class="row" data-s="sin tmux solo neovim"><td><kbd>--sin-tmux</kbd></td><td class="action">Solo Neovim, sin tmux</td></tr>
+            <tr class="row" data-s="elegir selector proyectos"><td><kbd>--elegir</kbd></td><td class="action">Selector de proyectos conocidos</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Si <code class="inline">git pull --ff-only</code> se para al actualizar, tienes cambios propios en la copia del entorno: guárdalos antes de seguir, no los borres a ciegas. Si tu copia es muy antigua y no tiene <code class="inline">actualizar.sh</code>: <code class="inline">git pull --ff-only</code> y luego <code class="inline">sh scripts/actualizar.sh</code>.</p>
+    </div>
   </section>
 
-  <section id="tmux">
-    <div class="head"><span class="num">03</span><h2>Tmux</h2></div>
-    <p class="sub">Tecla líder: <kbd>Ctrl+a</kbd>. Pulsar, soltar, y luego la acción.</p>
-    <div class="tcard twrap">
-      <table>
-        <thead><tr><th>Atajo</th><th>Acción</th></tr></thead>
-        <tbody>
-          <tr class="row" data-s="ir editor agente terminal panel"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>n</kbd> <span class="then">/</span> <kbd>a</kbd> <span class="then">/</span> <kbd>t</kbd></td><td class="action">Ir al panel editor / agente / terminal</td></tr>
-          <tr class="row" data-s="mover paneles izquierda derecha arriba abajo"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>h/j/k/l</kbd></td><td class="action">Panel izquierda / abajo / arriba / derecha</td></tr>
-          <tr class="row" data-s="maximizar restaurar zoom panel"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>z</kbd></td><td class="action">Maximizar / restaurar panel</td></tr>
-          <tr class="row" data-s="dividir vertical horizontal split"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>|</kbd> <span class="then">/</span> <kbd>-</kbd></td><td class="action">Dividir vertical / horizontal</td></tr>
-          <tr class="row" data-s="redimensionar panel"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>H/J/K/L</kbd></td><td class="action">Redimensionar el panel en esa dirección</td></tr>
-          <tr class="row" data-s="numeros de panel elegir"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>q</kbd></td><td class="action">Mostrar números de panel para elegir</td></tr>
-          <tr class="row" data-s="selector proyectos popup cambiar proyecto"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>P</kbd></td><td class="action">Selector de proyectos en una ventana emergente</td></tr>
-          <tr class="row" data-s="crear ventana nueva pestana"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>c</kbd></td><td class="action">Crear ventana nueva</td></tr>
-          <tr class="row" data-s="ir a ventana numero"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>1</kbd>…<kbd>9</kbd></td><td class="action">Ir a la ventana por número</td></tr>
-          <tr class="row" data-s="ventana anterior selector ventanas"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>p</kbd> <span class="then">/</span> <kbd>w</kbd></td><td class="action">Ventana anterior / selector de ventanas</td></tr>
-          <tr class="row" data-s="renombrar ventana"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>,</kbd></td><td class="action">Renombrar ventana</td></tr>
-          <tr class="row" data-s="lazygit git abrir"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>g</kbd></td><td class="action">Abrir / reutilizar LazyGit</td></tr>
-          <tr class="row" data-s="salir desconectar sin cerrar procesos"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>d</kbd></td><td class="action">Salir conservando editor y procesos</td></tr>
-          <tr class="row" data-s="cerrar proyecto definitivamente confirmar guardar"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>Q</kbd> <span class="then">(confirmar)</span></td><td class="action">Cerrar el proyecto. Cierra Neovim de forma ordenada y pregunta si hay cambios sin guardar</td></tr>
-          <tr class="row" data-s="cerrar panel actual"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>x</kbd> <span class="then">(confirmar)</span></td><td class="action">Cerrar solo el panel actual</td></tr>
-          <tr class="row" data-s="ayuda tmux categorias"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>?</kbd></td><td class="action">Ayuda interactiva por categorías</td></tr>
-          <tr class="row" data-s="enviar ctrl a literal"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>Ctrl+a</kbd></td><td class="action">Enviar un Ctrl+a literal a la aplicación</td></tr>
-          <tr class="row" data-s="copiar modo copia historial scroll"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>[</kbd></td><td class="action">Entrar en modo copia</td></tr>
-          <tr class="row" data-s="seleccionar copiar salir modo copia"><td><kbd>v</kbd> <span class="then">/</span> <kbd>y</kbd> <span class="then">(en modo copia)</span></td><td class="action">Empezar selección / copiar y salir</td></tr>
-          <tr class="row" data-s="pegar buffer tmux"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>]</kbd></td><td class="action">Pegar el buffer de tmux</td></tr>
-        </tbody>
-      </table>
+  <section id="pantalla">
+    <div class="head"><h2>La pantalla y tmux</h2></div>
+    <p class="sub">tmux divide la pantalla en paneles. Su tecla es <kbd>Ctrl+a</kbd>: pulsa, suelta, y luego la acción.</p>
+    <div class="figs">
+      <figure>
+        <div class="svgfig" data-fig="tmux"></div>
+        <figcaption>Arriba el editor (y el agente de IA a la derecha si abres con <code class="inline">--ia</code>). Abajo una terminal para <code class="inline">npm run dev</code> o Git. <kbd>Ctrl+a</kbd><span class="then">→</span><kbd>z</kbd> agranda el panel en el que estás.</figcaption>
+      </figure>
+      <figure>
+        <div class="svgfig" data-fig="modos"></div>
+        <figcaption>Neovim tiene modos. Si una tecla escribe letras en vez de hacer algo, estás en INSERTAR: pulsa <kbd>Esc</kbd> y vuelves siempre a NORMAL. El modo actual sale abajo a la izquierda.</figcaption>
+      </figure>
     </div>
-    <p class="note">El buffer de copia de tmux no siempre coincide con el portapapeles gráfico del sistema.</p>
+    <div class="group">
+      <div class="tcard">
+        <table>
+          <thead><tr><th>Atajo</th><th>Acción</th></tr></thead>
+          <tbody>
+            <tr class="row" data-b data-s="ir editor agente terminal panel"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>n</kbd> <span class="then">/</span> <kbd>t</kbd> <span class="then">/</span> <kbd>a</kbd></td><td class="action">Ir al editor / a la terminal / al agente</td></tr>
+            <tr class="row" data-b data-s="mover paneles izquierda derecha arriba abajo"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>h/j/k/l</kbd></td><td class="action">Ir al panel de la izquierda / abajo / arriba / derecha</td></tr>
+            <tr class="row" data-b data-s="maximizar restaurar zoom panel"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>z</kbd></td><td class="action">Agrandar el panel / dejarlo como estaba</td></tr>
+            <tr class="row" data-b data-s="salir desconectar sin cerrar procesos"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>d</kbd></td><td class="action">Salir dejándolo todo abierto (editor, servidor, terminal)</td></tr>
+            <tr class="row" data-b data-s="cerrar proyecto definitivamente confirmar guardar"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>Q</kbd> <span class="then">(confirmar)</span></td><td class="action">Cerrar el proyecto entero. Avisa si hay cambios sin guardar</td></tr>
+            <tr class="row" data-b data-s="lazygit git abrir"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>g</kbd></td><td class="action">Abrir LazyGit</td></tr>
+            <tr class="row" data-b data-s="ayuda tmux categorias"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>?</kbd></td><td class="action">Ayuda de tmux por categorías</td></tr>
+            <tr class="row" data-s="agente popup ventana emergente ia"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>i</kbd></td><td class="action">Abrir el agente de IA en una ventana flotante (con <code class="inline">--ia</code>)</td></tr>
+            <tr class="row" data-s="dividir vertical horizontal split"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>|</kbd> <span class="then">/</span> <kbd>-</kbd></td><td class="action">Dividir el panel en vertical / horizontal</td></tr>
+            <tr class="row" data-s="redimensionar panel tamaño"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>H/J/K/L</kbd></td><td class="action">Cambiar el tamaño del panel hacia ese lado</td></tr>
+            <tr class="row" data-s="numeros de panel elegir"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>q</kbd></td><td class="action">Mostrar el número de cada panel para elegir uno</td></tr>
+            <tr class="row" data-s="cerrar panel actual"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>x</kbd> <span class="then">(confirmar)</span></td><td class="action">Cerrar solo este panel</td></tr>
+            <tr class="row" data-s="selector proyectos popup cambiar proyecto"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>P</kbd></td><td class="action">Cambiar a otro proyecto</td></tr>
+            <tr class="row" data-s="crear ventana nueva pestana"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>c</kbd></td><td class="action">Crear una ventana nueva (como una pestaña)</td></tr>
+            <tr class="row" data-s="ir a ventana numero"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>1</kbd>…<kbd>9</kbd></td><td class="action">Ir a la ventana por su número</td></tr>
+            <tr class="row" data-s="ventana anterior selector ventanas"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>p</kbd> <span class="then">/</span> <kbd>w</kbd></td><td class="action">Ventana anterior / elegir ventana</td></tr>
+            <tr class="row" data-s="renombrar ventana"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>,</kbd></td><td class="action">Renombrar la ventana</td></tr>
+            <tr class="row" data-s="copiar modo copia historial scroll subir salida terminal"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>[</kbd></td><td class="action">Modo copia: subir por la salida de la terminal. Dentro, <kbd>v</kbd> empieza a seleccionar y <kbd>y</kbd> copia y sale</td></tr>
+            <tr class="row" data-s="pegar buffer tmux"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>]</kbd></td><td class="action">Pegar lo copiado en tmux (no siempre es el portapapeles del sistema)</td></tr>
+            <tr class="row" data-s="enviar ctrl a literal"><td><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>Ctrl+a</kbd></td><td class="action">Mandar un Ctrl+a normal al programa</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </section>
 
-  <section id="menu">
-    <div class="head"><span class="num">04</span><h2>Menú de Espacio</h2><span class="badge">nuevo</span></div>
-    <p class="sub">Pulsa <kbd>Espacio</kbd> en modo normal y espera: aparece el menú. Muchas opciones muestran entre paréntesis su tecla nativa de Vim para que la vayas aprendiendo.</p>
-
-    <h3>Texto y edición · <kbd>Espacio</kbd><span class="then">→</span><kbd>t</kbd></h3>
-    <div class="tcard twrap mb">
-      <table>
-        <thead><tr><th>Atajo</th><th>Acción</th><th>Nativa</th></tr></thead>
-        <tbody>
-          <tr class="row" data-s="duplicar linea espacio t d"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>t</kbd><span class="then">→</span><kbd>d</kbd></td><td class="action">Duplicar línea</td><td><kbd>yyp</kbd></td></tr>
-          <tr class="row" data-s="borrar linea"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>t</kbd><span class="then">→</span><kbd>x</kbd></td><td class="action">Borrar línea</td><td><kbd>dd</kbd></td></tr>
-          <tr class="row" data-s="copiar linea"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>t</kbd><span class="then">→</span><kbd>y</kbd> <span class="then">/</span> <kbd>p</kbd></td><td class="action">Copiar línea / pegar debajo</td><td><kbd>yy</kbd> <kbd>p</kbd></td></tr>
-          <tr class="row" data-s="mover subir bajar linea"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>t</kbd><span class="then">→</span><kbd>j</kbd> <span class="then">/</span> <kbd>k</kbd></td><td class="action">Bajar / subir la línea</td><td><kbd>Alt+Shift+j/k</kbd></td></tr>
-          <tr class="row" data-s="comentar linea seleccion"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>t</kbd><span class="then">→</span><kbd>c</kbd></td><td class="action">Comentar línea (o la selección en modo visual)</td><td><kbd>gcc</kbd> <kbd>gc</kbd></td></tr>
-          <tr class="row" data-s="seleccionar todo"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>t</kbd><span class="then">→</span><kbd>a</kbd></td><td class="action">Seleccionar todo</td><td><kbd>ggVG</kbd></td></tr>
-          <tr class="row" data-s="deshacer rehacer"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>t</kbd><span class="then">→</span><kbd>u</kbd> <span class="then">/</span> <kbd>r</kbd></td><td class="action">Deshacer / rehacer</td><td><kbd>u</kbd> <kbd>Ctrl+r</kbd></td></tr>
-          <tr class="row" data-s="reemplazar palabra todo el archivo sustituir"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>t</kbd><span class="then">→</span><kbd>s</kbd></td><td class="action">Reemplazar la palabra del cursor en todo el archivo, confirmando cada una</td><td><kbd>:%s</kbd></td></tr>
-          <tr class="row" data-s="comentar ctrl barra vs code"><td><kbd>Ctrl+/</kbd></td><td class="action">Comentar línea o selección, también en modo insertar</td><td><kbd>gcc</kbd></td></tr>
-        </tbody>
-      </table>
+  <section id="archivos">
+    <div class="head"><h2>Abrir y moverse entre archivos</h2></div>
+    <div class="group">
+      <h3>Buscar y cambiar de archivo</h3>
+      <div class="tcard">
+        <table>
+          <thead><tr><th>Atajo</th><th>Acción</th></tr></thead>
+          <tbody>
+            <tr class="row" data-b data-s="buscar archivo nombre abrir"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>f</kbd></td><td class="action">Buscar un archivo por su nombre</td></tr>
+            <tr class="row" data-b data-s="buscar texto proyecto grep"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>g</kbd></td><td class="action">Buscar un texto en todo el proyecto</td></tr>
+            <tr class="row" data-b data-s="archivos recientes historial fr"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>r</kbd></td><td class="action">Archivos recientes</td></tr>
+            <tr class="row" data-b data-s="archivos abiertos buffers lista"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>b</kbd><span class="then">→</span><kbd>b</kbd></td><td class="action">Lista de archivos abiertos</td></tr>
+            <tr class="row" data-b data-s="archivo siguiente anterior buffer"><td><kbd>]b</kbd> <span class="then">/</span> <kbd>[b</kbd></td><td class="action">Archivo abierto siguiente / anterior (también <kbd>Espacio</kbd><span class="then">→</span><kbd>b</kbd><span class="then">→</span><kbd>n</kbd> / <kbd>p</kbd>)</td></tr>
+            <tr class="row" data-b data-s="cerrar archivo buffer"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>b</kbd><span class="then">→</span><kbd>d</kbd></td><td class="action">Cerrar este archivo (<kbd>Espacio</kbd><span class="then">→</span><kbd>b</kbd><span class="then">→</span><kbd>o</kbd> cierra los demás ya guardados)</td></tr>
+            <tr class="row" data-s="buscar palabra cursor proyecto fw grep"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>w</kbd></td><td class="action">Buscar en el proyecto la palabra que hay bajo el cursor</td></tr>
+            <tr class="row" data-s="repetir ultima busqueda reanudar f punto"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>.</kbd></td><td class="action">Volver a la última búsqueda donde la dejaste</td></tr>
+            <tr class="row" data-s="buscador abrir dividir lado a lado derecha debajo vsplit split"><td><kbd>Ctrl+v</kbd> <span class="then">/</span> <kbd>Ctrl+s</kbd> <span class="then">(en el buscador)</span></td><td class="action">Abrir el resultado a la derecha / debajo, en vez de con <kbd>Enter</kbd></td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-
-    <h3>Código (LSP) · <kbd>Espacio</kbd><span class="then">→</span><kbd>l</kbd></h3>
-    <div class="tcard twrap mb">
-      <table>
-        <thead><tr><th>Atajo</th><th>Acción</th><th>Nativa</th></tr></thead>
-        <tbody>
-          <tr class="row" data-s="ir definicion"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>l</kbd><span class="then">→</span><kbd>g</kbd></td><td class="action">Ir a la definición (vuelve con <kbd>Ctrl+o</kbd>)</td><td><kbd>gd</kbd></td></tr>
-          <tr class="row" data-s="documentacion tipo hover"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>l</kbd><span class="then">→</span><kbd>k</kbd></td><td class="action">Tipo y documentación</td><td><kbd>K</kbd></td></tr>
-          <tr class="row" data-s="usos referencias donde se usa"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>l</kbd><span class="then">→</span><kbd>r</kbd></td><td class="action">Ver dónde se usa</td><td><kbd>grr</kbd></td></tr>
-          <tr class="row" data-s="renombrar proyecto variable"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>l</kbd><span class="then">→</span><kbd>n</kbd></td><td class="action">Renombrar en todo el proyecto</td><td><kbd>grn</kbd></td></tr>
-          <tr class="row" data-s="arreglos rapidos acciones code action"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>l</kbd><span class="then">→</span><kbd>a</kbd></td><td class="action">Arreglos y acciones rápidas (p. ej. importar)</td><td><kbd>gra</kbd></td></tr>
-          <tr class="row" data-s="errores del archivo diagnostico"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>l</kbd><span class="then">→</span><kbd>d</kbd></td><td class="action">Errores de todo el archivo</td><td></td></tr>
-          <tr class="row" data-s="formatear codigo"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>l</kbd><span class="then">→</span><kbd>f</kbd></td><td class="action">Formatear el código</td><td></td></tr>
-          <tr class="row" data-s="jsdoc documentar funcion"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>l</kbd><span class="then">→</span><kbd>j</kbd></td><td class="action">Documentar la función con JSDoc</td><td><kbd>/**</kbd> <kbd>Enter</kbd></td></tr>
-        </tbody>
-      </table>
+    <div class="group">
+      <h3>Explorador (árbol de carpetas)</h3>
+      <p class="note">Se abre y se cierra con <kbd>Espacio</kbd><span class="then">→</span><kbd>e</kbd>. <kbd>Espacio</kbd><span class="then">→</span><kbd>E</kbd> lo abre señalando el archivo actual. Estas teclas funcionan con el cursor dentro del árbol.</p>
+      <div class="tcard">
+        <table>
+          <thead><tr><th>Tecla</th><th>Acción</th></tr></thead>
+          <tbody>
+            <tr class="row" data-b data-s="mover abrir carpeta enter"><td><kbd>j/k</kbd>, <kbd>Enter</kbd></td><td class="action">Moverse; abrir archivo o desplegar carpeta</td></tr>
+            <tr class="row" data-b data-s="crear archivo carpeta nuevo"><td><kbd>a</kbd></td><td class="action">Crear archivo o carpeta (acaba en <code class="inline">/</code> para carpeta)</td></tr>
+            <tr class="row" data-b data-s="renombrar archivo"><td><kbd>r</kbd></td><td class="action">Renombrar</td></tr>
+            <tr class="row" data-b data-s="borrar archivo eliminar confirmar"><td><kbd>d</kbd> <span class="then">(confirmar)</span></td><td class="action">Borrar. <span class="warn">No va a la papelera</span></td></tr>
+            <tr class="row" data-b data-s="vista previa previsualizar imagen archivo p"><td><kbd>p</kbd> <span class="badge">nuevo</span></td><td class="action">Vista previa del archivo sin abrirlo (<kbd>p</kbd> otra vez la cierra). Ya no sirve para pegar</td></tr>
+            <tr class="row" data-b data-s="abrir dividir lado a lado derecha debajo vsplit split ventana"><td><kbd>Ctrl+v</kbd> <span class="then">/</span> <kbd>Ctrl+x</kbd></td><td class="action">Abrir el archivo a la derecha / debajo del actual</td></tr>
+            <tr class="row" data-s="mover archivo otra carpeta ruta"><td><kbd>u</kbd></td><td class="action">Cambiar la ruta completa: sirve para mover el archivo a otra carpeta</td></tr>
+            <tr class="row" data-s="copiar nombre ruta archivo yank"><td><kbd>y</kbd> <span class="then">/</span> <kbd>Y</kbd></td><td class="action">Copiar el nombre / la ruta relativa del archivo</td></tr>
+            <tr class="row" data-s="ocultos dotfiles mostrar env gitignore"><td><kbd>H</kbd></td><td class="action">Mostrar u ocultar archivos ocultos (los que empiezan por punto)</td></tr>
+            <tr class="row" data-s="filtro filtrar limpiar"><td><kbd>f</kbd> <span class="then">/</span> <kbd>F</kbd></td><td class="action">Filtrar por nombre / quitar el filtro</td></tr>
+            <tr class="row" data-s="plegar todo colapsar"><td><kbd>W</kbd></td><td class="action">Plegar todas las carpetas</td></tr>
+            <tr class="row" data-s="refrescar recargar arbol"><td><kbd>R</kbd></td><td class="action">Refrescar el árbol</td></tr>
+            <tr class="row" data-s="iconos nerd font cuadros entornoiconos"><td><kbd>:EntornoIconos 0</kbd> <span class="then">/</span> <kbd>1</kbd></td><td class="action">Quitar / poner los iconos (si ves cuadros). Sin número, comprueba si tu fuente los muestra</td></tr>
+            <tr class="row" data-s="ayuda explorador"><td><kbd>g?</kbd></td><td class="action">Todas las teclas del explorador</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
+    <div class="group">
+      <h3>Dos archivos a la vez</h3>
+      <div class="tcard">
+        <table>
+          <thead><tr><th>Atajo</th><th>Acción</th></tr></thead>
+          <tbody>
+            <tr class="row" data-b data-s="dividir dos archivos lado a lado derecha vsplit vertical split ventana"><td><kbd>:vs archivo</kbd> <span class="then">/</span> <kbd>:sp archivo</kbd></td><td class="action">Abrir otro archivo a la derecha / debajo (<kbd>Tab</kbd> completa la ruta)</td></tr>
+            <tr class="row" data-b data-s="ventanas splits neovim ctrl h j k l"><td><kbd>Ctrl+h/j/k/l</kbd></td><td class="action">Pasar a la ventana de la izquierda / abajo / arriba / derecha (sin Ctrl+a: esto es dentro del editor)</td></tr>
+            <tr class="row" data-b data-s="cerrar ventana split dividida"><td><kbd>:q</kbd> <span class="then">(en la ventana)</span></td><td class="action">Cerrar esa ventana. El archivo sigue abierto en las demás</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 
-    <h3>Resto del menú</h3>
-    <div class="tcard twrap">
-      <table>
-        <thead><tr><th>Atajo</th><th>Acción</th></tr></thead>
-        <tbody>
-          <tr class="row" data-s="ejecutar archivo bash python node typescript terminal"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>r</kbd></td><td class="action">Guarda y ejecuta el archivo (Bash, Python, JS, TS) en la terminal de abajo. En HTML o React te dice cómo verlo (<code class="inline">npm run dev</code>)</td></tr>
-          <tr class="row" data-s="archivos abiertos buffers lista"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>b</kbd><span class="then">→</span><kbd>b</kbd></td><td class="action">Lista de archivos abiertos</td></tr>
-          <tr class="row" data-s="archivo siguiente anterior buffer"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>b</kbd><span class="then">→</span><kbd>n</kbd> <span class="then">/</span> <kbd>p</kbd> <span class="then">·</span> <kbd>]b</kbd> <span class="then">/</span> <kbd>[b</kbd></td><td class="action">Archivo siguiente / anterior</td></tr>
-          <tr class="row" data-s="cerrar archivo buffer"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>b</kbd><span class="then">→</span><kbd>d</kbd> <span class="then">/</span> <kbd>o</kbd></td><td class="action">Cerrar este archivo / cerrar los demás ya guardados</td></tr>
-          <tr class="row" data-s="buscar archivo texto"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>f/g/b</kbd></td><td class="action">Buscar archivo / buscar texto / elegir archivo abierto</td></tr>
-          <tr class="row" data-s="archivos recientes historial fr"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>r</kbd></td><td class="action">Archivos recientes</td></tr>
-          <tr class="row" data-s="buscar palabra cursor proyecto fw grep"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>w</kbd></td><td class="action">Buscar en todo el proyecto la palabra que hay bajo el cursor</td></tr>
-          <tr class="row" data-s="errores todo el proyecto diagnosticos fd"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>d</kbd></td><td class="action">Errores de todo el proyecto, con buscador</td></tr>
-          <tr class="row" data-s="repetir ultima busqueda reanudar f punto"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>.</kbd></td><td class="action">Repetir la última búsqueda (vuelve a abrirla donde la dejaste)</td></tr>
-          <tr class="row" data-s="buscador abrir dividir lado a lado derecha debajo vsplit split"><td><kbd>Ctrl+v</kbd> <span class="then">/</span> <kbd>Ctrl+s</kbd> <span class="then">(en el buscador)</span></td><td class="action">Abrir el resultado a la derecha / debajo en vez de con <kbd>Enter</kbd></td></tr>
-          <tr class="row" data-s="explorador localizar archivo actual"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>e</kbd> <span class="then">/</span> <kbd>E</kbd></td><td class="action">Explorador al instante / localizar el archivo actual en el árbol</td></tr>
-          <tr class="row" data-s="formato al guardar activar desactivar"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>u</kbd><span class="then">→</span><kbd>f</kbd></td><td class="action">Activar / desactivar el formato al guardar</td></tr>
-          <tr class="row" data-s="tema cambiar theme"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>u</kbd><span class="then">→</span><kbd>t</kbd></td><td class="action">Cambiar de tema (Catppuccin, Tokyo Night, Kanagawa)</td></tr>
-          <tr class="row" data-s="caracteres invisibles espacios tabuladores"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>u</kbd><span class="then">→</span><kbd>l</kbd></td><td class="action">Mostrar / ocultar caracteres invisibles</td></tr>
-          <tr class="row" data-s="lazygit repositorio subcarpeta"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>g</kbd><span class="then">→</span><kbd>g</kbd></td><td class="action">Abrir LazyGit. Si el repositorio está en una subcarpeta lo encuentra solo, y si hay varios te pregunta cuál</td></tr>
-          <tr class="row" data-s="ver cambios git codigo diff overlay"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>g</kbd><span class="then">→</span><kbd>d</kbd></td><td class="action">Ver dentro del código lo que has cambiado respecto a Git (otra vez para ocultarlo)</td></tr>
-          <tr class="row" data-s="ia agente enviar seleccion"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>a</kbd><span class="then">→</span><kbd>c</kbd></td><td class="action">Enviar posición o selección al agente de IA (con <code class="inline">--ia</code>)</td></tr>
-          <tr class="row" data-s="leer markdown mdcat visor md mr"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>m</kbd><span class="then">→</span><kbd>r</kbd> <span class="badge">nuevo</span></td><td class="action">Leer el Markdown actual con formato en una ventana de tmux (guárdalo antes). Dentro: <kbd>r</kbd> recarga, <kbd>q</kbd> cierra</td></tr>
-          <tr class="row" data-s="documentacion markdown elegir proyecto md readme"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>m</kbd><span class="then">→</span><kbd>d</kbd> <span class="badge">nuevo</span></td><td class="action">Elegir un Markdown del proyecto (README, apuntes…) y leerlo</td></tr>
-          <tr class="row" data-s="ayuda teclas f1 chuleta web navegador"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>?</kbd> <span class="then">·</span> <kbd>F1</kbd></td><td class="action">Ayuda rápida (se cierra con <kbd>q</kbd> o <kbd>Esc</kbd>). Dentro, <kbd>c</kbd> abre esta chuleta en tmux y <kbd>w</kbd> en el navegador</td></tr>
-        </tbody>
-      </table>
+  <section id="moverse">
+    <div class="head"><h2>Moverse dentro del archivo</h2></div>
+    <p class="sub">En modo normal. Las flechas también funcionan, pero estas teclas son más rápidas.</p>
+    <div class="group">
+      <div class="tcard">
+        <table>
+          <thead><tr><th>Tecla</th><th>Acción</th></tr></thead>
+          <tbody>
+            <tr class="row" data-b data-s="izquierda abajo arriba derecha mover cursor"><td><kbd>h j k l</kbd></td><td class="action">Izquierda / abajo / arriba / derecha</td></tr>
+            <tr class="row" data-b data-s="palabra siguiente anterior final"><td><kbd>w</kbd> <span class="then">/</span> <kbd>b</kbd> <span class="then">/</span> <kbd>e</kbd></td><td class="action">Palabra siguiente / anterior / final de palabra</td></tr>
+            <tr class="row" data-b data-s="inicio final linea primer caracter"><td><kbd>0</kbd> <span class="then">/</span> <kbd>^</kbd> <span class="then">/</span> <kbd>$</kbd></td><td class="action">Principio de línea / primer carácter / final de línea</td></tr>
+            <tr class="row" data-b data-s="inicio final archivo fichero"><td><kbd>gg</kbd> <span class="then">/</span> <kbd>G</kbd></td><td class="action">Principio / final del archivo</td></tr>
+            <tr class="row" data-b data-s="ir a linea numero"><td><kbd>:25</kbd> <span class="then">o</span> <kbd>25G</kbd></td><td class="action">Ir a la línea 25</td></tr>
+            <tr class="row" data-b data-s="buscar en el archivo texto barra"><td><kbd>/texto</kbd> <span class="then">luego</span> <kbd>n</kbd> <span class="then">/</span> <kbd>N</kbd></td><td class="action">Buscar en este archivo / siguiente / anterior. <kbd>Esc</kbd> quita el resaltado</td></tr>
+            <tr class="row" data-b data-s="media pantalla scroll"><td><kbd>Ctrl+d</kbd> <span class="then">/</span> <kbd>Ctrl+u</kbd></td><td class="action">Media pantalla abajo / arriba</td></tr>
+            <tr class="row" data-s="buscar palabra cursor siguiente coincidencia"><td><kbd>*</kbd></td><td class="action">Buscar la palabra que hay bajo el cursor</td></tr>
+            <tr class="row" data-s="saltar caracter f t buscar en linea"><td><kbd>f)</kbd> <span class="then">/</span> <kbd>t)</kbd> <span class="then">·</span> <kbd>;</kbd> <span class="then">/</span> <kbd>,</kbd></td><td class="action">Ir al siguiente <code class="inline">)</code> / justo antes · repetir / repetir hacia atrás</td></tr>
+            <tr class="row" data-s="pareja parentesis corchetes llaves"><td><kbd>%</kbd></td><td class="action">Saltar a la pareja de <code class="inline">()</code>, <code class="inline">[]</code>, <code class="inline">{}</code></td></tr>
+            <tr class="row" data-s="centrar linea pantalla"><td><kbd>zz</kbd></td><td class="action">Centrar la línea actual en pantalla</td></tr>
+            <tr class="row" data-s="volver donde estaba saltos ctrl o"><td><kbd>Ctrl+o</kbd> <span class="then">/</span> <kbd>Ctrl+i</kbd></td><td class="action">Volver a donde estabas / deshacer esa vuelta</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="editar">
+    <div class="head"><h2>Escribir y editar</h2></div>
+    <div class="group">
+      <h3>Lo básico</h3>
+      <div class="tcard">
+        <table>
+          <thead><tr><th>Tecla</th><th>Acción</th></tr></thead>
+          <tbody>
+            <tr class="row" data-b data-s="insertar antes despues nueva linea escribir"><td><kbd>i</kbd> <span class="then">/</span> <kbd>a</kbd> <span class="then">·</span> <kbd>o</kbd> <span class="then">/</span> <kbd>O</kbd></td><td class="action">Escribir antes / después del cursor · en una línea nueva debajo / encima</td></tr>
+            <tr class="row" data-b data-s="jk esc salir insercion escape modo normal"><td><kbd>Esc</kbd> <span class="then">o</span> <kbd>jk</kbd></td><td class="action">Dejar de escribir y volver a modo normal (<kbd>jk</kbd>: las dos letras seguidas y rápido)</td></tr>
+            <tr class="row" data-b data-s="deshacer rehacer undo redo"><td><kbd>u</kbd> <span class="then">/</span> <kbd>Ctrl+r</kbd></td><td class="action">Deshacer / rehacer</td></tr>
+            <tr class="row" data-b data-s="comentar ctrl barra vs code linea seleccion"><td><kbd>Ctrl+/</kbd></td><td class="action">Comentar la línea o la selección (también escribiendo)</td></tr>
+            <tr class="row" data-b data-s="copiar borrar cortar linea yy dd"><td><kbd>yy</kbd> <span class="then">/</span> <kbd>dd</kbd></td><td class="action">Copiar / cortar la línea (<kbd>3yy</kbd>, <kbd>3dd</kbd> para tres)</td></tr>
+            <tr class="row" data-b data-s="pegar despues antes cursor paste"><td><kbd>p</kbd> <span class="then">/</span> <kbd>P</kbd></td><td class="action">Pegar después / antes del cursor</td></tr>
+            <tr class="row" data-b data-s="duplicar linea yyp"><td><kbd>yyp</kbd></td><td class="action">Duplicar la línea (o <kbd>Espacio</kbd><span class="then">→</span><kbd>t</kbd><span class="then">→</span><kbd>d</kbd>)</td></tr>
+            <tr class="row" data-b data-s="mover linea seleccion arriba abajo alt"><td><kbd>Alt+Shift+j</kbd> <span class="then">/</span> <kbd>k</kbd></td><td class="action">Bajar / subir la línea o la selección</td></tr>
+            <tr class="row" data-b data-s="cambiar palabra ciw"><td><kbd>ciw</kbd></td><td class="action">Cambiar la palabra del cursor (la borra y te deja escribiendo)</td></tr>
+            <tr class="row" data-b data-s="cambiar texto entre comillas ci"><td><kbd>ci"</kbd></td><td class="action">Cambiar el texto entre comillas</td></tr>
+            <tr class="row" data-b data-s="seleccion caracteres lineas visual"><td><kbd>v</kbd> <span class="then">/</span> <kbd>V</kbd></td><td class="action">Seleccionar por caracteres / por líneas</td></tr>
+            <tr class="row" data-b data-s="sangria indentar seleccion"><td><kbd>&gt;</kbd> <span class="then">/</span> <kbd>&lt;</kbd> <span class="then">(con selección)</span></td><td class="action">Más / menos sangría sin perder la selección</td></tr>
+            <tr class="row" data-s="borrar reemplazar caracter x r"><td><kbd>x</kbd> <span class="then">/</span> <kbd>r</kbd> + letra</td><td class="action">Borrar un carácter / cambiarlo por otro</td></tr>
+            <tr class="row" data-s="repetir ultimo cambio punto"><td><kbd>.</kbd></td><td class="action">Repetir el último cambio</td></tr>
+            <tr class="row" data-s="portapapeles sistema clipboard wsl"><td><kbd>"+y</kbd> <span class="then">/</span> <kbd>"+p</kbd></td><td class="action">Copiar / pegar con el portapapeles del sistema</td></tr>
+            <tr class="row" data-s="cambiar coincidencia cgn repetir"><td><kbd>cgn</kbd> <span class="then">luego</span> <kbd>.</kbd></td><td class="action">Cambiar lo buscado y repetirlo en la siguiente coincidencia</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="group">
+      <h3>Menú de texto · <kbd>Espacio</kbd><span class="then">→</span><kbd>t</kbd></h3>
+      <p class="note">Pulsa <kbd>Espacio</kbd> y espera: sale un menú con todo. Entre paréntesis está la tecla de Vim equivalente, para que la vayas aprendiendo.</p>
+      <div class="tcard">
+        <table>
+          <thead><tr><th>Atajo</th><th>Acción</th><th>Vim</th></tr></thead>
+          <tbody>
+            <tr class="row" data-b data-s="duplicar linea espacio t d"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>t</kbd><span class="then">→</span><kbd>d</kbd></td><td class="action">Duplicar línea</td><td class="native"><kbd>yyp</kbd></td></tr>
+            <tr class="row" data-b data-s="borrar linea"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>t</kbd><span class="then">→</span><kbd>x</kbd></td><td class="action">Borrar línea</td><td class="native"><kbd>dd</kbd></td></tr>
+            <tr class="row" data-b data-s="copiar linea pegar debajo"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>t</kbd><span class="then">→</span><kbd>y</kbd> <span class="then">/</span> <kbd>p</kbd></td><td class="action">Copiar línea / pegar debajo</td><td class="native"><kbd>yy</kbd> <kbd>p</kbd></td></tr>
+            <tr class="row" data-b data-s="seleccionar todo"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>t</kbd><span class="then">→</span><kbd>a</kbd></td><td class="action">Seleccionar todo</td><td class="native"><kbd>ggVG</kbd></td></tr>
+            <tr class="row" data-b data-s="reemplazar palabra todo el archivo sustituir"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>t</kbd><span class="then">→</span><kbd>s</kbd></td><td class="action">Reemplazar la palabra del cursor en todo el archivo, confirmando cada una</td><td class="native"><kbd>:%s</kbd></td></tr>
+            <tr class="row" data-s="mover subir bajar linea"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>t</kbd><span class="then">→</span><kbd>j</kbd> <span class="then">/</span> <kbd>k</kbd></td><td class="action">Bajar / subir la línea</td><td class="native"><kbd>Alt+Shift+j/k</kbd></td></tr>
+            <tr class="row" data-s="comentar linea seleccion"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>t</kbd><span class="then">→</span><kbd>c</kbd></td><td class="action">Comentar línea o selección</td><td class="native"><kbd>gcc</kbd> <kbd>gc</kbd></td></tr>
+            <tr class="row" data-s="deshacer rehacer"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>t</kbd><span class="then">→</span><kbd>u</kbd> <span class="then">/</span> <kbd>r</kbd></td><td class="action">Deshacer / rehacer</td><td class="native"><kbd>u</kbd> <kbd>Ctrl+r</kbd></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="group adv">
+      <h3>Objetos de texto</h3>
+      <p class="note"><kbd>i</kbd> = dentro, <kbd>a</kbd> = alrededor (con los delimitadores). Se combinan con <kbd>d</kbd> borrar, <kbd>c</kbd> cambiar, <kbd>y</kbd> copiar o <kbd>v</kbd> seleccionar: <kbd>ci{</kbd> cambia el contenido de un bloque, <kbd>dap</kbd> borra el párrafo. Si el cursor está antes, <kbd>ci"</kbd>, <kbd>ci(</kbd>… saltan a los siguientes de la línea.</p>
+      <div class="tcard">
+        <table>
+          <thead><tr><th>Combinación</th><th>Acción</th></tr></thead>
+          <tbody>
+            <tr class="row" data-s="palabra interior con espacio iw aw"><td><kbd>iw</kbd> <span class="then">/</span> <kbd>aw</kbd></td><td class="action">La palabra / la palabra con el espacio siguiente</td></tr>
+            <tr class="row" data-s="comillas dentro incluyendo ci"><td><kbd>i"</kbd> <span class="then">/</span> <kbd>a"</kbd></td><td class="action">Dentro de las comillas / incluyéndolas (también <code class="inline">'</code> y <code class="inline">`</code>)</td></tr>
+            <tr class="row" data-s="parentesis llaves bloque dentro incluyendo ci( ci{"><td><kbd>i{</kbd> <span class="then">/</span> <kbd>a{</kbd></td><td class="action">Dentro del bloque / con las llaves (también <code class="inline">(</code> y <code class="inline">[</code>)</td></tr>
+            <tr class="row" data-s="etiqueta html xml tag it at cit"><td><kbd>it</kbd> <span class="then">/</span> <kbd>at</kbd></td><td class="action">Contenido de una etiqueta HTML / la etiqueta entera (<kbd>cit</kbd> cambia el texto de dentro)</td></tr>
+            <tr class="row" data-s="argumento parametro funcion cia ia aa"><td><kbd>ia</kbd> <span class="then">/</span> <kbd>aa</kbd></td><td class="action">Un argumento / con su coma: <kbd>cia</kbd> en <code class="inline">suma(a, |b)</code> deja <code class="inline">suma(a, )</code></td></tr>
+            <tr class="row" data-s="llamada funcion dentro parentesis cif if af"><td><kbd>if</kbd> <span class="then">/</span> <kbd>af</kbd></td><td class="action">Lo de dentro de una llamada a función / la llamada entera</td></tr>
+            <tr class="row" data-s="parrafo interior con linea blanco ip ap"><td><kbd>ip</kbd> <span class="then">/</span> <kbd>ap</kbd></td><td class="action">Párrafo / párrafo con la línea en blanco</td></tr>
+            <tr class="row" data-s="bloque rectangular columna ctrl v visual"><td><kbd>Ctrl+v</kbd> <span class="then">(en el editor)</span></td><td class="action">Selección rectangular (columnas)</td></tr>
+            <tr class="row" data-s="reseleccionar ultimo gv"><td><kbd>gv</kbd></td><td class="action">Volver a seleccionar lo último seleccionado</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="group adv">
+      <h3>Rodear con comillas, paréntesis o etiquetas</h3>
+      <p class="note"><kbd>sa</kbd> añadir + qué rodear + con qué · <kbd>sd</kbd> quitar · <kbd>sr</kbd> cambiar uno por otro. Vale para <kbd>"</kbd> <kbd>'</kbd> <kbd>`</kbd> <kbd>(</kbd> <kbd>[</kbd> <kbd>{</kbd> y <kbd>t</kbd> (etiqueta).</p>
+      <div class="tcard">
+        <table>
+          <thead><tr><th>Tecla</th><th>Acción</th></tr></thead>
+          <tbody>
+            <tr class="row" data-s="rodear palabra comillas anadir surround saiw"><td><kbd>saiw"</kbd></td><td class="action">Rodear la palabra con comillas: <code class="inline">hola</code> → <code class="inline">"hola"</code></td></tr>
+            <tr class="row" data-s="quitar comillas rodean surround sd"><td><kbd>sd"</kbd></td><td class="action">Quitar las comillas que rodean al cursor</td></tr>
+            <tr class="row" data-s="cambiar comillas dobles simples surround sr"><td><kbd>sr"'</kbd></td><td class="action">Cambiar comillas dobles por simples</td></tr>
+            <tr class="row" data-s="rodear etiqueta html strong surround saiwt"><td><kbd>saiwt</kbd></td><td class="action">Rodear la palabra con una etiqueta (te pide el nombre: <code class="inline">strong</code>…)</td></tr>
+            <tr class="row" data-s="rodear lineas seleccion parentesis visual sa"><td><kbd>V</kbd> <span class="then">y luego</span> <kbd>sa)</kbd></td><td class="action">Rodear las líneas seleccionadas con paréntesis</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </section>
 
   <section id="snippets">
-    <div class="head"><span class="num">05</span><h2>Snippets y autocompletado</h2><span class="badge">nuevo</span></div>
-    <p class="sub">Escribe el prefijo en modo insertar y pulsa <kbd>Ctrl+j</kbd>. En una línea vacía, <kbd>Ctrl+j</kbd> muestra todas las plantillas del lenguaje. En HTML y CSS, <kbd>Ctrl+j</kbd> también expande abreviaturas de Emmet.</p>
-    <div class="tcard twrap mb">
-      <table>
-        <thead><tr><th>Tecla</th><th>Acción</th></tr></thead>
-        <tbody>
-          <tr class="row" data-s="ctrl j snippet expandir elegir plantilla"><td><kbd>Ctrl+j</kbd> <span class="then">(insertar)</span></td><td class="action">Expandir el snippet del prefijo o abrir el menú de snippets</td></tr>
-          <tr class="row" data-s="espacio s plantillas lista buscador"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>s</kbd></td><td class="action">Lista de plantillas con buscador: escribe para filtrar y <kbd>Enter</kbd> inserta</td></tr>
-          <tr class="row" data-s="campo siguiente anterior snippet"><td><kbd>Ctrl+l</kbd> <span class="then">/</span> <kbd>Ctrl+h</kbd></td><td class="action">Saltar al campo siguiente / anterior del snippet</td></tr>
-          <tr class="row" data-s="terminar snippet esc"><td><kbd>Esc</kbd></td><td class="action">Terminar de rellenar el snippet</td></tr>
-          <tr class="row" data-s="autocompletado lsp ctrl espacio"><td><kbd>Ctrl+Espacio</kbd></td><td class="action">Pedir autocompletado</td></tr>
-          <tr class="row" data-s="sugerencias tab enter aceptar"><td><kbd>Tab</kbd> <span class="then">/</span> <kbd>Enter</kbd></td><td class="action">Recorrer sugerencias / aceptar la elegida</td></tr>
-          <tr class="row" data-s="completar palabras texto ctrl n p"><td><kbd>Ctrl+n</kbd> <span class="then">/</span> <kbd>Ctrl+p</kbd></td><td class="action">Completar con palabras del propio archivo</td></tr>
-        </tbody>
-      </table>
+    <div class="head"><h2>Snippets, Emmet y autocompletado</h2></div>
+    <p class="sub">Escribiendo, pon el prefijo y pulsa <kbd>Ctrl+j</kbd>. En una línea vacía, <kbd>Ctrl+j</kbd> enseña todas las plantillas del lenguaje.</p>
+    <div class="group">
+      <div class="tcard">
+        <table>
+          <thead><tr><th>Tecla</th><th>Acción</th></tr></thead>
+          <tbody>
+            <tr class="row" data-b data-s="ctrl j snippet expandir elegir plantilla emmet"><td><kbd>Ctrl+j</kbd> <span class="then">(escribiendo)</span></td><td class="action">Expandir el snippet o la abreviatura de Emmet, o abrir el menú de snippets</td></tr>
+            <tr class="row" data-b data-s="campo siguiente anterior snippet"><td><kbd>Ctrl+l</kbd> <span class="then">/</span> <kbd>Ctrl+h</kbd></td><td class="action">Saltar al hueco siguiente / anterior del snippet. <kbd>Esc</kbd> termina</td></tr>
+            <tr class="row" data-b data-s="sugerencias tab enter aceptar autocompletado"><td><kbd>Tab</kbd> <span class="then">/</span> <kbd>Enter</kbd></td><td class="action">Recorrer las sugerencias / aceptar la elegida</td></tr>
+            <tr class="row" data-b data-s="espacio s plantillas lista buscador"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>s</kbd></td><td class="action">Lista de plantillas con buscador: escribe para filtrar y <kbd>Enter</kbd> inserta</td></tr>
+            <tr class="row" data-s="autocompletado lsp ctrl espacio"><td><kbd>Ctrl+Espacio</kbd></td><td class="action">Pedir sugerencias si no salen solas</td></tr>
+            <tr class="row" data-s="parametros firma funcion ayuda ctrl s"><td><kbd>Ctrl+s</kbd> <span class="then">(escribiendo)</span></td><td class="action">Ver qué parámetros espera la función que estás escribiendo</td></tr>
+            <tr class="row" data-s="completar palabras texto ctrl n p"><td><kbd>Ctrl+n</kbd> <span class="then">/</span> <kbd>Ctrl+p</kbd></td><td class="action">Completar con palabras del propio archivo</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-    <div class="tcard twrap">
-      <table>
-        <thead><tr><th>Archivo</th><th>Prefijos útiles</th></tr></thead>
-        <tbody>
-          <tr class="row" data-s="html plantilla exclamacion div form"><td><code class="inline">.html</code></td><td class="action"><kbd>!</kbd> plantilla completa · <kbd>div</kbd> <kbd>section</kbd> <kbd>nav</kbd> <kbd>ul</kbd> <kbd>table</kbd> <kbd>form</kbd> <kbd>input</kbd> <kbd>img</kbd> <kbd>a</kbd> <kbd>link:css</kbd> <kbd>script:src</kbd> <kbd>meta:vp</kbd></td></tr>
-          <tr class="row" data-s="emmet html css abreviatura ctrl j li p id clase"><td>Emmet <span class="badge">nuevo</span></td><td class="action">En <code class="inline">.html</code>/<code class="inline">.css</code>, escribe la abreviatura sin <code class="inline">&lt;</code> y pulsa <kbd>Ctrl+j</kbd>: <code class="inline">ul&gt;li*3</code> lista de 3 · <code class="inline">p*5</code> cinco párrafos · <code class="inline">p#average</code> párrafo con id · <code class="inline">p#nota$*5</code> ids nota1…nota5 · <code class="inline">div.caja</code> con clase</td></tr>
-          <tr class="row" data-s="javascript js clg console log if for fn class export"><td><code class="inline">.js</code></td><td class="action"><kbd>clg</kbd> console.log · <kbd>if</kbd> <kbd>ife</kbd> <kbd>for</kbd> <kbd>forof</kbd> <kbd>while</kbd> <kbd>fn</kbd> <kbd>afn</kbd> <kbd>try</kbd> <kbd>imp</kbd> <kbd>exp</kbd> <kbd>expd</kbd> <kbd>class</kbd> · <kbd>docfn</kbd> JSDoc</td></tr>
-          <tr class="row" data-s="dom queryselector evento addeventlistener crear elemento domcontentloaded qs qsa ael ce dcl"><td>DOM</td><td class="action"><kbd>qs</kbd> / <kbd>qsa</kbd> seleccionar uno / varios · <kbd>ael</kbd> escuchar evento · <kbd>ce</kbd> crear y añadir elemento · <kbd>dcl</kbd> al cargar el DOM</td></tr>
-          <tr class="row" data-s="datos fetch post localstorage map filter find reduce promesa settimeout lsg lss prom sto"><td>Datos</td><td class="action"><kbd>fetch</kbd> con async/await · <kbd>post</kbd> enviar JSON · <kbd>lsg</kbd> / <kbd>lss</kbd> leer / guardar en localStorage · <kbd>map</kbd> <kbd>filter</kbd> <kbd>find</kbd> <kbd>reduce</kbd> · <kbd>prom</kbd> promesa · <kbd>sto</kbd> setTimeout</td></tr>
-          <tr class="row" data-s="tests vitest jest describe it desc"><td>Tests</td><td class="action"><kbd>desc</kbd> bloque de tests · <kbd>it</kbd> un test (Vitest/Jest)</td></tr>
-          <tr class="row" data-s="typescript ts cabecera cabts interface type union enum generica as const int gfn asc"><td><code class="inline">.ts</code></td><td class="action">Todo lo de JS y además <kbd>cabts</kbd> cabecera del archivo · <kbd>int</kbd> interface · <kbd>type</kbd> alias · <kbd>union</kbd> unión de literales · <kbd>enum</kbd> · <kbd>gfn</kbd> función genérica · <kbd>asc</kbd> array <code class="inline">as const</code></td></tr>
-          <tr class="row" data-s="react componente rafce jsx tsx"><td><code class="inline">.jsx</code> <code class="inline">.tsx</code></td><td class="action">Componentes React: <kbd>rafce</kbd> <kbd>rafc</kbd> <kbd>rfce</kbd> <kbd>rfc</kbd></td></tr>
-          <tr class="row" data-s="css centrar flex grid media reset"><td><code class="inline">.css</code></td><td class="action"><kbd>centrar</kbd> <kbd>flex</kbd> <kbd>grid</kbd> <kbd>media</kbd> <kbd>vars</kbd> <kbd>reset</kbd> <kbd>trans</kbd> <kbd>anim</kbd> <kbd>tw</kbd></td></tr>
-          <tr class="row" data-s="bash sh python docker compose"><td>Otros</td><td class="action">Bash (<kbd>cab</kbd> <kbd>menu</kbd> <kbd>getopts</kbd>…), Python (<kbd>main</kbd> <kbd>def</kbd> <kbd>class</kbd>…), Dockerfile (<kbd>node</kbd> <kbd>vite</kbd> <kbd>nginx</kbd>…) y <code class="inline">compose.yaml</code> (<kbd>compose</kbd> <kbd>mysql</kbd> <kbd>lamp</kbd>…)</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <section id="neovim">
-    <div class="head"><span class="num">06</span><h2>Neovim: movimiento y edición</h2></div>
-
-    <h3>Básicos</h3>
-    <div class="tcard twrap mb">
-      <table>
-        <thead><tr><th>Atajo</th><th>Acción</th></tr></thead>
-        <tbody>
-          <tr class="row" data-s="guardar"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>w</kbd></td><td class="action">Guardar (formatea solo TS, JS, HTML, CSS, JSON, Python…; en TS añade los <code class="inline">;</code> que falten)</td></tr>
-          <tr class="row" data-s="jk salir insercion escape"><td><kbd>jk</kbd> <span class="then">(en insertar)</span></td><td class="action">Volver a modo normal escribiendo j y k seguidos y rápido</td></tr>
-          <tr class="row" data-s="esc limpiar busqueda resaltado"><td><kbd>Esc</kbd></td><td class="action">Volver a modo normal y quitar el resaltado de la búsqueda</td></tr>
-          <tr class="row" data-s="insertar antes despues nueva linea"><td><kbd>i</kbd> <span class="then">/</span> <kbd>a</kbd> <span class="then">·</span> <kbd>o</kbd> <span class="then">/</span> <kbd>O</kbd></td><td class="action">Insertar antes / después del cursor · nueva línea debajo / encima</td></tr>
-          <tr class="row" data-s="dividir dos archivos lado a lado derecha vsplit vertical split ventana"><td><kbd>:vs archivo</kbd> <span class="then">/</span> <kbd>:sp archivo</kbd></td><td class="action">Abrir otro archivo a la derecha / debajo del actual (<kbd>Tab</kbd> autocompleta la ruta)</td></tr>
-          <tr class="row" data-s="ventanas splits neovim ctrl h j k l"><td><kbd>Ctrl+h/j/k/l</kbd> <span class="then">(normal)</span></td><td class="action">Moverse entre ventanas de Neovim</td></tr>
-          <tr class="row" data-s="cerrar ventana split dividida"><td><kbd>:q</kbd> <span class="then">(en la ventana)</span></td><td class="action">Cerrar esa ventana dividida (el archivo sigue abierto en las demás)</td></tr>
-          <tr class="row" data-s="terminal salir modo terminal esc esc"><td><kbd>Esc</kbd> <kbd>Esc</kbd> <span class="then">(terminal)</span></td><td class="action">Salir del modo terminal de Neovim</td></tr>
-          <tr class="row" data-s="dashboard inicio ifl"><td><kbd>:IFL</kbd></td><td class="action">Volver a la pantalla de inicio</td></tr>
-          <tr class="row" data-s="iconos nerd font cuadros entornoiconos"><td><kbd>:EntornoIconos</kbd> <span class="then">0 / 1</span></td><td class="action">Ver si la fuente muestra bien los iconos / quitarlos / ponerlos (se guarda; útil si salen cuadros)</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <h3>Movimiento</h3>
-    <div class="tcard twrap mb">
-      <table>
-        <thead><tr><th>Tecla</th><th>Acción</th></tr></thead>
-        <tbody>
-          <tr class="row" data-s="izquierda abajo arriba derecha mover cursor"><td><kbd>h j k l</kbd></td><td class="action">Izquierda / abajo / arriba / derecha</td></tr>
-          <tr class="row" data-s="palabra siguiente anterior final"><td><kbd>w</kbd> <span class="then">/</span> <kbd>b</kbd> <span class="then">/</span> <kbd>e</kbd></td><td class="action">Palabra siguiente / anterior / final de palabra</td></tr>
-          <tr class="row" data-s="inicio final linea primer caracter"><td><kbd>0</kbd> <span class="then">/</span> <kbd>^</kbd> <span class="then">/</span> <kbd>$</kbd></td><td class="action">Inicio absoluto / primer carácter / final de línea</td></tr>
-          <tr class="row" data-s="saltar caracter f t buscar en linea"><td><kbd>f)</kbd> <span class="then">/</span> <kbd>t)</kbd> <span class="then">·</span> <kbd>;</kbd> <span class="then">/</span> <kbd>,</kbd></td><td class="action">Ir al siguiente <code class="inline">)</code> / justo antes · repetir / repetir al revés</td></tr>
-          <tr class="row" data-s="inicio final archivo fichero"><td><kbd>gg</kbd> <span class="then">/</span> <kbd>G</kbd></td><td class="action">Inicio / final del archivo</td></tr>
-          <tr class="row" data-s="ir a linea numero"><td><kbd>25G</kbd> <span class="then">o</span> <kbd>:25</kbd></td><td class="action">Ir a la línea 25</td></tr>
-          <tr class="row" data-s="media pantalla scroll"><td><kbd>Ctrl+d</kbd> <span class="then">/</span> <kbd>Ctrl+u</kbd></td><td class="action">Media pantalla abajo / arriba</td></tr>
-          <tr class="row" data-s="centrar linea pantalla"><td><kbd>zz</kbd></td><td class="action">Centrar la línea actual en pantalla</td></tr>
-          <tr class="row" data-s="pareja parentesis corchetes llaves"><td><kbd>%</kbd></td><td class="action">Saltar a la pareja de (), [], {}</td></tr>
-          <tr class="row" data-s="buscar palabra cursor siguiente coincidencia"><td><kbd>*</kbd> <span class="then">/</span> <kbd>n</kbd> <span class="then">/</span> <kbd>N</kbd></td><td class="action">Buscar la palabra del cursor / siguiente / anterior (centrado)</td></tr>
-          <tr class="row" data-s="cambiar coincidencia cgn repetir"><td><kbd>cgn</kbd> <span class="then">luego</span> <kbd>.</kbd></td><td class="action">Cambiar la coincidencia buscada y repetirlo en la siguiente</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <h3>Seleccionar y objetos de texto</h3>
-    <p class="note" style="margin:0 0 8px"><kbd>i</kbd> = dentro (contenido), <kbd>a</kbd> = alrededor (incluye los delimitadores). Se combinan con <kbd>d</kbd> (borrar), <kbd>c</kbd> (cambiar), <kbd>y</kbd> (copiar) o <kbd>v</kbd> (seleccionar): <kbd>ciw</kbd> cambia una palabra, <kbd>ci{</kbd> cambia el contenido de un bloque, <kbd>dap</kbd> borra el párrafo entero.</p>
-    <div class="tcard twrap mb">
-      <table>
-        <thead><tr><th>Combinación</th><th>Acción</th></tr></thead>
-        <tbody>
-          <tr class="row" data-s="seleccion caracteres lineas bloque visual"><td><kbd>v</kbd> <span class="then">/</span> <kbd>V</kbd> <span class="then">/</span> <kbd>Ctrl+v</kbd></td><td class="action">Selección por caracteres / líneas / bloque rectangular</td></tr>
-          <tr class="row" data-s="reseleccionar ultimo gv"><td><kbd>gv</kbd></td><td class="action">Reseleccionar lo último seleccionado</td></tr>
-          <tr class="row" data-s="sangria indentar seleccion"><td><kbd>&gt;</kbd> <span class="then">/</span> <kbd>&lt;</kbd> <span class="then">(visual)</span></td><td class="action">Aumentar / reducir sangría sin perder la selección</td></tr>
-          <tr class="row" data-s="palabra interior con espacio iw aw"><td><kbd>iw</kbd> <span class="then">/</span> <kbd>aw</kbd></td><td class="action">Palabra interior / palabra con el espacio siguiente</td></tr>
-          <tr class="row" data-s="comillas dentro incluyendo ci"><td><kbd>i"</kbd> <span class="then">/</span> <kbd>a"</kbd></td><td class="action">Dentro de las comillas / incluyéndolas (también ' y `)</td></tr>
-          <tr class="row" data-s="parentesis llaves bloque dentro incluyendo ci( ci{"><td><kbd>i{</kbd> <span class="then">/</span> <kbd>a{</kbd></td><td class="action">Dentro del bloque / incluyendo las llaves (también ( y [)</td></tr>
-          <tr class="row" data-s="parrafo interior con linea blanco ip ap"><td><kbd>ip</kbd> <span class="then">/</span> <kbd>ap</kbd></td><td class="action">Párrafo interior / con la línea en blanco</td></tr>
-          <tr class="row" data-s="etiqueta html xml tag it at cit"><td><kbd>it</kbd> <span class="then">/</span> <kbd>at</kbd></td><td class="action">Contenido de una etiqueta HTML / la etiqueta completa (<kbd>cit</kbd> cambia el texto de dentro)</td></tr>
-          <tr class="row" data-s="argumento parametro funcion cia ia aa"><td><kbd>ia</kbd> <span class="then">/</span> <kbd>aa</kbd></td><td class="action">Un argumento / con su coma: <kbd>cia</kbd> en <code class="inline">suma(a, |b)</code> deja <code class="inline">suma(a, )</code></td></tr>
-          <tr class="row" data-s="llamada funcion dentro parentesis cif if af"><td><kbd>if</kbd> <span class="then">/</span> <kbd>af</kbd></td><td class="action">Lo de dentro de una llamada a función / la llamada entera</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="note" style="margin:-8px 0 16px"><kbd>ci"</kbd>, <kbd>ci(</kbd>, <kbd>cia</kbd>… ya no exigen estar dentro: si el cursor está antes, saltan a las siguientes comillas, paréntesis o argumento de la línea.</p>
-
-    <h3>Rodear: comillas, paréntesis y etiquetas</h3>
-    <p class="note" style="margin:0 0 8px"><kbd>sa</kbd> añadir + qué rodear + con qué · <kbd>sd</kbd> quitar · <kbd>sr</kbd> cambiar uno por otro. Funciona con <kbd>"</kbd> <kbd>'</kbd> <kbd>`</kbd> <kbd>(</kbd> <kbd>[</kbd> <kbd>{</kbd> y <kbd>t</kbd> (etiqueta).</p>
-    <div class="tcard twrap mb">
-      <table>
-        <thead><tr><th>Tecla</th><th>Acción</th></tr></thead>
-        <tbody>
-          <tr class="row" data-s="rodear palabra comillas anadir surround saiw"><td><kbd>saiw"</kbd></td><td class="action">Rodear la palabra con comillas: <code class="inline">hola</code> → <code class="inline">"hola"</code></td></tr>
-          <tr class="row" data-s="quitar comillas rodean surround sd"><td><kbd>sd"</kbd></td><td class="action">Quitar las comillas que rodean al cursor</td></tr>
-          <tr class="row" data-s="cambiar comillas dobles simples surround sr"><td><kbd>sr"'</kbd></td><td class="action">Cambiar comillas dobles por simples</td></tr>
-          <tr class="row" data-s="rodear etiqueta html strong surround saiwt"><td><kbd>saiwt</kbd></td><td class="action">Rodear la palabra con una etiqueta (te pide el nombre: <code class="inline">strong</code>…)</td></tr>
-          <tr class="row" data-s="rodear lineas seleccion parentesis visual sa"><td><kbd>V</kbd> <span class="then">y luego</span> <kbd>sa)</kbd></td><td class="action">Rodear las líneas seleccionadas con paréntesis</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <h3>Copiar, borrar, deshacer</h3>
-    <div class="tcard twrap mb">
-      <table>
-        <thead><tr><th>Tecla</th><th>Acción</th></tr></thead>
-        <tbody>
-          <tr class="row" data-s="copiar borrar linea yy dd"><td><kbd>yy</kbd> <span class="then">/</span> <kbd>dd</kbd></td><td class="action">Copiar / borrar la línea actual (<kbd>3yy</kbd>, <kbd>3dd</kbd> para tres)</td></tr>
-          <tr class="row" data-s="pegar despues antes cursor paste"><td><kbd>p</kbd> <span class="then">/</span> <kbd>P</kbd></td><td class="action">Pegar después / antes del cursor</td></tr>
-          <tr class="row" data-s="borrar reemplazar caracter x r"><td><kbd>x</kbd> <span class="then">/</span> <kbd>r</kbd> + carácter</td><td class="action">Borrar un carácter / reemplazarlo</td></tr>
-          <tr class="row" data-s="deshacer rehacer undo redo"><td><kbd>u</kbd> <span class="then">/</span> <kbd>Ctrl+r</kbd></td><td class="action">Deshacer / rehacer</td></tr>
-          <tr class="row" data-s="repetir ultimo cambio punto"><td><kbd>.</kbd></td><td class="action">Repetir el último cambio</td></tr>
-          <tr class="row" data-s="mover linea seleccion arriba abajo"><td><kbd>Alt+Shift+j</kbd> <span class="then">/</span> <kbd>Alt+Shift+k</kbd></td><td class="action">Mover la línea o selección abajo / arriba</td></tr>
-          <tr class="row" data-s="portapapeles sistema clipboard wsl"><td><kbd>"+y</kbd> <span class="then">/</span> <kbd>"+p</kbd></td><td class="action">Copiar / pegar con el portapapeles del sistema (en WSL ya no deja <code class="inline">^M</code>)</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <h3>Errores y pliegues</h3>
-    <div class="tcard twrap">
-      <table>
-        <thead><tr><th>Tecla</th><th>Acción</th></tr></thead>
-        <tbody>
-          <tr class="row" data-s="error siguiente anterior aviso"><td><kbd>]d</kbd> <span class="then">/</span> <kbd>[d</kbd></td><td class="action">Error o aviso siguiente / anterior</td></tr>
-          <tr class="row" data-s="errores linea gl"><td><kbd>gl</kbd></td><td class="action">Errores de esta línea (en HTML también atributos mal escritos, ids repetidos y cierres incorrectos)</td></tr>
-          <tr class="row" data-s="errores todo el proyecto fd"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>d</kbd></td><td class="action">Errores de todo el proyecto, con buscador</td></tr>
-          <tr class="row" data-s="arreglar error importar code action gra"><td><kbd>gra</kbd></td><td class="action">Arreglar el error bajo el cursor: importar, corregir… (<kbd>Espacio</kbd><span class="then">→</span><kbd>l</kbd><span class="then">→</span><kbd>a</kbd>)</td></tr>
-          <tr class="row" data-s="definicion declaracion volver"><td><kbd>gd</kbd> <span class="then">·</span> <kbd>Ctrl+o</kbd></td><td class="action">Ir a definición · volver donde estabas</td></tr>
-          <tr class="row" data-s="documentacion hover k"><td><kbd>K</kbd> <span class="then">(dos veces)</span></td><td class="action">Tipo y documentación / entrar en la ventana para desplazarla</td></tr>
-          <tr class="row" data-s="pliegue abrir cerrar bloque za"><td><kbd>za</kbd> <span class="then">·</span> <kbd>zc</kbd> <span class="then">/</span> <kbd>zo</kbd></td><td class="action">Abrir o cerrar el bloque · cerrar / abrir</td></tr>
-          <tr class="row" data-s="pliegues todos cerrar abrir"><td><kbd>zM</kbd> <span class="then">/</span> <kbd>zR</kbd></td><td class="action">Cerrar / abrir todos los bloques</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="note">Los errores se ven con una E/W en el margen, subrayado y el mensaje al final de la línea. La barra de estado dice «Errores: 4 Avisos: 1». Los mensajes de TypeScript salen en español y al guardar se añaden los puntos y coma que falten.</p>
-  </section>
-
-  <section id="ortografia">
-    <div class="head"><span class="num">07</span><h2>Ortografía</h2></div>
-    <p class="sub">Español e inglés en Markdown, texto y mensajes de commit. Las faltas salen en rojo.</p>
-    <div class="tcard twrap">
-      <table>
-        <thead><tr><th>Atajo</th><th>Acción</th></tr></thead>
-        <tbody>
-          <tr class="row" data-s="corregir falta ortografia sugerencias"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>o</kbd><span class="then">→</span><kbd>c</kbd></td><td class="action">Corregir la falta (elige la sugerencia por número)</td></tr>
-          <tr class="row" data-s="falta siguiente anterior ortografia"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>o</kbd><span class="then">→</span><kbd>n</kbd> <span class="then">/</span> <kbd>p</kbd></td><td class="action">Ir a la falta siguiente / anterior</td></tr>
-          <tr class="row" data-s="anadir palabra correcta diccionario"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>o</kbd><span class="then">→</span><kbd>a</kbd></td><td class="action">Añadir la palabra como correcta</td></tr>
-          <tr class="row" data-s="activar desactivar ortografia"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>o</kbd><span class="then">→</span><kbd>t</kbd></td><td class="action">Activar / desactivar</td></tr>
-        </tbody>
-      </table>
+    <div class="group">
+      <h3>Prefijos útiles</h3>
+      <div class="tcard">
+        <table>
+          <thead><tr><th>Archivo</th><th>Prefijos</th></tr></thead>
+          <tbody>
+            <tr class="row" data-b data-s="html plantilla exclamacion div form"><td><code class="inline">.html</code></td><td class="action"><kbd>!</kbd> plantilla completa · <kbd>div</kbd> <kbd>section</kbd> <kbd>nav</kbd> <kbd>ul</kbd> <kbd>table</kbd> <kbd>form</kbd> <kbd>input</kbd> <kbd>img</kbd> <kbd>a</kbd> <kbd>link:css</kbd> <kbd>script:src</kbd> <kbd>meta:vp</kbd></td></tr>
+            <tr class="row" data-b data-s="emmet html css abreviatura ctrl j li p id clase"><td>Emmet</td><td class="action">En <code class="inline">.html</code> y <code class="inline">.css</code>, sin el <code class="inline">&lt;</code>: <code class="inline">ul&gt;li*3</code> lista de 3 · <code class="inline">p*5</code> cinco párrafos · <code class="inline">p#nota$*5</code> ids nota1…nota5 · <code class="inline">div.caja</code> con clase</td></tr>
+            <tr class="row" data-b data-s="javascript js clg console log if for fn class export"><td><code class="inline">.js</code></td><td class="action"><kbd>clg</kbd> console.log · <kbd>if</kbd> <kbd>ife</kbd> <kbd>for</kbd> <kbd>forof</kbd> <kbd>while</kbd> <kbd>fn</kbd> <kbd>afn</kbd> <kbd>try</kbd> <kbd>imp</kbd> <kbd>exp</kbd> <kbd>expd</kbd> <kbd>class</kbd> · <kbd>docfn</kbd> JSDoc</td></tr>
+            <tr class="row" data-b data-s="dom queryselector evento addeventlistener crear elemento domcontentloaded qs qsa ael ce dcl"><td>DOM</td><td class="action"><kbd>qs</kbd> / <kbd>qsa</kbd> seleccionar uno / varios · <kbd>ael</kbd> escuchar evento · <kbd>ce</kbd> crear y añadir elemento · <kbd>dcl</kbd> al cargar el DOM</td></tr>
+            <tr class="row" data-s="datos fetch post localstorage map filter find reduce promesa settimeout lsg lss prom sto"><td>Datos</td><td class="action"><kbd>fetch</kbd> con async/await · <kbd>post</kbd> enviar JSON · <kbd>lsg</kbd> / <kbd>lss</kbd> leer / guardar en localStorage · <kbd>map</kbd> <kbd>filter</kbd> <kbd>find</kbd> <kbd>reduce</kbd> · <kbd>prom</kbd> promesa · <kbd>sto</kbd> setTimeout</td></tr>
+            <tr class="row" data-s="typescript ts cabecera cabts interface type union enum generica as const int gfn asc"><td><code class="inline">.ts</code></td><td class="action">Lo de JS y además <kbd>cabts</kbd> cabecera · <kbd>int</kbd> interface · <kbd>type</kbd> alias · <kbd>union</kbd> · <kbd>enum</kbd> · <kbd>gfn</kbd> función genérica · <kbd>asc</kbd> array <code class="inline">as const</code></td></tr>
+            <tr class="row" data-s="react componente rafce jsx tsx"><td><code class="inline">.jsx</code> <code class="inline">.tsx</code></td><td class="action">Componentes React: <kbd>rafce</kbd> <kbd>rafc</kbd> <kbd>rfce</kbd> <kbd>rfc</kbd></td></tr>
+            <tr class="row" data-s="css centrar flex grid media reset"><td><code class="inline">.css</code></td><td class="action"><kbd>centrar</kbd> <kbd>flex</kbd> <kbd>grid</kbd> <kbd>media</kbd> <kbd>vars</kbd> <kbd>reset</kbd> <kbd>trans</kbd> <kbd>anim</kbd> <kbd>tw</kbd></td></tr>
+            <tr class="row" data-s="tests vitest jest describe it desc"><td>Tests</td><td class="action"><kbd>desc</kbd> bloque de tests · <kbd>it</kbd> un test (Vitest/Jest)</td></tr>
+            <tr class="row" data-s="bash sh python docker compose"><td>Otros</td><td class="action">Bash (<kbd>cab</kbd> <kbd>menu</kbd> <kbd>getopts</kbd>…), Python (<kbd>main</kbd> <kbd>def</kbd> <kbd>class</kbd>…), Dockerfile (<kbd>node</kbd> <kbd>vite</kbd> <kbd>nginx</kbd>…) y <code class="inline">compose.yaml</code> (<kbd>compose</kbd> <kbd>mysql</kbd> <kbd>lamp</kbd>…)</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </section>
 
-  <section id="explorador">
-    <div class="head"><span class="num">08</span><h2>Explorador (NvimTree)</h2></div>
-    <p class="sub">Se abre con <kbd>Espacio</kbd><span class="then">→</span><kbd>e</kbd>, y <kbd>Espacio</kbd><span class="then">→</span><kbd>E</kbd> lo abre marcando el archivo actual. Estas teclas solo funcionan con el cursor dentro del árbol.</p>
-    <div class="tcard twrap">
-      <table>
-        <thead><tr><th>Tecla</th><th>Acción</th></tr></thead>
-        <tbody>
-          <tr class="row" data-s="mover abrir carpeta enter"><td><kbd>j/k</kbd>, <kbd>Enter</kbd></td><td class="action">Moverse, abrir archivo / desplegar carpeta</td></tr>
-          <tr class="row" data-s="abrir dividir lado a lado derecha debajo vsplit split ventana"><td><kbd>Ctrl+v</kbd> <span class="then">/</span> <kbd>Ctrl+x</kbd></td><td class="action">Abrir el archivo a la derecha / debajo del actual</td></tr>
-          <tr class="row" data-s="crear archivo carpeta nuevo"><td><kbd>a</kbd></td><td class="action">Crear archivo o carpeta (termina en / para carpeta)</td></tr>
-          <tr class="row" data-s="renombrar archivo"><td><kbd>r</kbd></td><td class="action">Renombrar</td></tr>
-          <tr class="row" data-s="borrar archivo eliminar confirmar"><td><kbd>d</kbd> <span class="then">(confirmar)</span></td><td class="action">Borrar (no es papelera)</td></tr>
-          <tr class="row" data-s="vista previa previsualizar imagen archivo p"><td><kbd>p</kbd></td><td class="action">Vista previa del archivo sin abrirlo (otra vez para cerrarla). Ya no es «pegar»</td></tr>
-          <tr class="row" data-s="copiar nombre archivo yank"><td><kbd>y</kbd></td><td class="action">Copiar el nombre del archivo</td></tr>
-          <tr class="row" data-s="filtro filtrar limpiar"><td><kbd>f</kbd> <span class="then">/</span> <kbd>F</kbd></td><td class="action">Filtro interactivo / limpiar filtro</td></tr>
-          <tr class="row" data-s="refrescar recargar arbol"><td><kbd>R</kbd></td><td class="action">Refrescar el árbol</td></tr>
-          <tr class="row" data-s="cerrar explorador"><td><kbd>q</kbd> <span class="then">/</span> <kbd>Espacio</kbd><span class="then">→</span><kbd>e</kbd></td><td class="action">Cerrar el explorador</td></tr>
-          <tr class="row" data-s="ayuda explorador"><td><kbd>g?</kbd></td><td class="action">Ayuda del explorador</td></tr>
-        </tbody>
-      </table>
+  <section id="errores">
+    <div class="head"><h2>Errores, ayuda y código</h2></div>
+    <p class="sub">Los errores salen con una E o una W en el margen, subrayados y con el mensaje al final de la línea. La barra de abajo cuenta «Errores: 4 Avisos: 1». En HTML también avisa de atributos mal escritos, ids repetidos y cierres incorrectos.</p>
+    <div class="group">
+      <div class="tcard">
+        <table>
+          <thead><tr><th>Tecla</th><th>Acción</th></tr></thead>
+          <tbody>
+            <tr class="row" data-b data-s="errores linea gl mensaje"><td><kbd>gl</kbd></td><td class="action">Leer el error de esta línea</td></tr>
+            <tr class="row" data-b data-s="error siguiente anterior aviso"><td><kbd>]d</kbd> <span class="then">/</span> <kbd>[d</kbd></td><td class="action">Ir al error siguiente / anterior</td></tr>
+            <tr class="row" data-b data-s="arreglar error importar code action gra"><td><kbd>gra</kbd></td><td class="action">Arreglar el error bajo el cursor: importar, corregir… (<kbd>Espacio</kbd><span class="then">→</span><kbd>l</kbd><span class="then">→</span><kbd>a</kbd>)</td></tr>
+            <tr class="row" data-b data-s="errores todo el proyecto diagnosticos fd"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>f</kbd><span class="then">→</span><kbd>d</kbd></td><td class="action">Errores de todo el proyecto, con buscador</td></tr>
+            <tr class="row" data-b data-s="definicion declaracion volver gd"><td><kbd>gd</kbd> <span class="then">·</span> <kbd>Ctrl+o</kbd></td><td class="action">Ir a donde se define / volver</td></tr>
+            <tr class="row" data-b data-s="documentacion hover k tipo"><td><kbd>K</kbd></td><td class="action">Ver el tipo y la documentación (<kbd>K</kbd> otra vez para entrar y desplazarte)</td></tr>
+            <tr class="row" data-b data-s="ayuda teclas f1 chuleta menu espacio esperar"><td><kbd>Espacio</kbd> <span class="then">y esperar</span> <span class="then">·</span> <kbd>F1</kbd></td><td class="action">Menú con todas las acciones · ayuda rápida (dentro, <kbd>c</kbd> abre esta chuleta en tmux y <kbd>w</kbd> en el navegador)</td></tr>
+            <tr class="row" data-s="usos referencias donde se usa grr"><td><kbd>grr</kbd></td><td class="action">Ver dónde se usa (<kbd>Espacio</kbd><span class="then">→</span><kbd>l</kbd><span class="then">→</span><kbd>r</kbd>)</td></tr>
+            <tr class="row" data-s="renombrar proyecto variable grn"><td><kbd>grn</kbd></td><td class="action">Renombrar en todo el proyecto (<kbd>Espacio</kbd><span class="then">→</span><kbd>l</kbd><span class="then">→</span><kbd>n</kbd>)</td></tr>
+            <tr class="row" data-s="errores del archivo diagnostico"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>l</kbd><span class="then">→</span><kbd>d</kbd></td><td class="action">Errores de todo el archivo</td></tr>
+            <tr class="row" data-s="jsdoc documentar funcion"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>l</kbd><span class="then">→</span><kbd>j</kbd></td><td class="action">Documentar la función con JSDoc (o escribe <code class="inline">/**</code> y <kbd>Enter</kbd>)</td></tr>
+            <tr class="row" data-s="pliegue abrir cerrar bloque za"><td><kbd>za</kbd> <span class="then">·</span> <kbd>zM</kbd> <span class="then">/</span> <kbd>zR</kbd></td><td class="action">Plegar o desplegar el bloque · plegar / desplegar todos</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="guardar">
+    <div class="head"><h2>Guardar, formatear y ejecutar</h2></div>
+    <div class="group">
+      <div class="tcard">
+        <table>
+          <thead><tr><th>Atajo</th><th>Acción</th></tr></thead>
+          <tbody>
+            <tr class="row" data-b data-s="guardar formatear"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>w</kbd></td><td class="action">Guardar. Formatea TS, JS, HTML, CSS, JSON y Python; en TS añade los <code class="inline">;</code> que falten</td></tr>
+            <tr class="row" data-b data-s="ejecutar archivo bash python node typescript terminal"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>r</kbd></td><td class="action">Guardar y ejecutar el archivo (Bash, Python, JS, TS) en la terminal de abajo. En HTML o React te dice cómo verlo</td></tr>
+            <tr class="row" data-b data-s="formato al guardar activar desactivar"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>u</kbd><span class="then">→</span><kbd>f</kbd></td><td class="action">Activar / desactivar el formato al guardar</td></tr>
+            <tr class="row" data-s="formatear codigo"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>l</kbd><span class="then">→</span><kbd>f</kbd></td><td class="action">Formatear sin guardar</td></tr>
+            <tr class="row" data-s="tema cambiar theme colores"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>u</kbd><span class="then">→</span><kbd>t</kbd></td><td class="action">Cambiar de tema (Catppuccin, Tokyo Night, Kanagawa)</td></tr>
+            <tr class="row" data-s="caracteres invisibles espacios tabuladores"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>u</kbd><span class="then">→</span><kbd>l</kbd></td><td class="action">Mostrar / ocultar espacios y tabuladores</td></tr>
+            <tr class="row" data-s="dashboard inicio ifl"><td><kbd>:IFL</kbd></td><td class="action">Volver a la pantalla de inicio</td></tr>
+            <tr class="row" data-s="terminal salir modo terminal esc esc"><td><kbd>Esc</kbd> <kbd>Esc</kbd> <span class="then">(en una terminal de Neovim)</span></td><td class="action">Salir del modo terminal</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="group">
+      <h3>Node, NPM y Vite (en la terminal de abajo)</h3>
+      <div class="codeblock"><span class="c"># crear un proyecto Vite en la carpeta actual</span>
+npm create vite@latest .
+
+<span class="c"># instalar dependencias y arrancar</span>
+npm install
+npm run dev
+
+<span class="c"># ver versiones</span>
+node --version
+npm --version</div>
+      <p class="note">El <code class="inline">^</code> delante de una versión en <code class="inline">package.json</code> significa «esta versión o una posterior compatible». Para un archivo suelto <code class="inline">.js</code> o <code class="inline">.ts</code> basta con <kbd>Espacio</kbd><span class="then">→</span><kbd>r</kbd>.</p>
     </div>
   </section>
 
   <section id="git">
-    <div class="head"><span class="num">09</span><h2>Git y LazyGit</h2><span class="badge">nuevo</span></div>
-
-    <h3>Git en el margen</h3>
-    <p class="note" style="margin:0 0 8px">En los archivos de un repositorio, el margen marca lo que has cambiado respecto a Git (lo que tengas en <em>stage</em> o, si no, el último commit): <strong style="color:var(--git-add)">▎</strong> línea nueva, <strong style="color:var(--git-change)">▎</strong> línea cambiada, <strong style="color:var(--git-del)">▁</strong> líneas borradas.</p>
-    <div class="tcard twrap mb">
-      <table>
-        <thead><tr><th>Tecla</th><th>Acción</th></tr></thead>
-        <tbody>
-          <tr class="row" data-s="cambio siguiente anterior git hunk"><td><kbd>]h</kbd> <span class="then">/</span> <kbd>[h</kbd></td><td class="action">Ir al cambio siguiente / anterior</td></tr>
-          <tr class="row" data-s="deshacer cambio linea git reset hunk gHgh"><td><kbd>gHgh</kbd></td><td class="action">Deshacer el cambio de esta zona y dejarla como está en el <em>stage</em> de Git (si no has hecho <em>stage</em>, como en el último commit)</td></tr>
-          <tr class="row" data-s="ver cambios dentro codigo git diff overlay"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>g</kbd><span class="then">→</span><kbd>d</kbd></td><td class="action">Ver los cambios dentro del código (otra vez para ocultarlos)</td></tr>
-        </tbody>
-      </table>
+    <div class="head"><h2>Git y LazyGit</h2></div>
+    <div class="group">
+      <h3>LazyGit</h3>
+      <p class="note">Se abre con <kbd>Espacio</kbd><span class="then">→</span><kbd>g</kbd><span class="then">→</span><kbd>g</kbd> (o <kbd>Ctrl+a</kbd><span class="then">→</span><kbd>g</kbd>). Encuentra el repositorio aunque esté en una subcarpeta. Las teclas cambian según el panel: si dudas, <kbd>?</kbd>.</p>
+      <div class="tcard">
+        <table>
+          <thead><tr><th>Tecla</th><th>Acción</th></tr></thead>
+          <tbody>
+            <tr class="row" data-b data-s="stage marcar archivo commit"><td><kbd>Espacio</kbd> <span class="then">(en archivos)</span></td><td class="action">Marcar / desmarcar el archivo para el commit (stage). <kbd>a</kbd> marca todos</td></tr>
+            <tr class="row" data-b data-s="commit hacer confirmar"><td><kbd>c</kbd></td><td class="action">Hacer commit (con corrector ortográfico)</td></tr>
+            <tr class="row" data-b data-s="pull push subir bajar remoto"><td><kbd>P</kbd> <span class="then">/</span> <kbd>p</kbd></td><td class="action">Subir (push) / bajar (pull)</td></tr>
+            <tr class="row" data-b data-s="ayuda menu contextual lazygit"><td><kbd>?</kbd></td><td class="action">Ayuda del panel en el que estás</td></tr>
+            <tr class="row" data-b data-s="salir volver quit"><td><kbd>q</kbd> <span class="then">/</span> <kbd>Esc</kbd></td><td class="action">Salir / volver</td></tr>
+            <tr class="row" data-s="stash guardar cambios temporal"><td><kbd>s</kbd></td><td class="action">Guardar los cambios aparte (stash)</td></tr>
+            <tr class="row" data-s="delta colores diff vista"><td><kbd>|</kbd></td><td class="action">Con <code class="inline">git-delta</code> instalado: cambiar entre la vista con colores y la normal</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-
-    <h3>LazyGit</h3>
-    <p class="sub" style="margin-top:0">Se abre con <kbd>Espacio</kbd><span class="then">→</span><kbd>g</kbd><span class="then">→</span><kbd>g</kbd> (Neovim), <kbd>l</kbd> desde el inicio, o <kbd>Ctrl+a</kbd><span class="then">→</span><kbd>g</kbd> (tmux). Desde Neovim encuentra el repositorio aunque esté en una subcarpeta; si hay varios, pregunta cuál. Con <code class="inline">git-delta</code> instalado, los cambios salen con colores y números de línea (<kbd>|</kbd> vuelve a la vista normal).</p>
-    <div class="tcard twrap">
-      <table>
-        <thead><tr><th>Tecla</th><th>Acción</th></tr></thead>
-        <tbody>
-          <tr class="row" data-s="ayuda menu contextual lazygit"><td><kbd>?</kbd></td><td class="action">Menú de ayuda contextual</td></tr>
-          <tr class="row" data-s="stage marcar archivo commit"><td><kbd>Espacio</kbd> <span class="then">(en archivos)</span></td><td class="action">Marcar / desmarcar para el commit (stage)</td></tr>
-          <tr class="row" data-s="commit hacer confirmar"><td><kbd>c</kbd></td><td class="action">Hacer commit (con corrector ortográfico)</td></tr>
-          <tr class="row" data-s="pull push subir bajar remoto"><td><kbd>p</kbd> <span class="then">/</span> <kbd>P</kbd></td><td class="action">Pull / push</td></tr>
-          <tr class="row" data-s="stash guardar cambios temporal"><td><kbd>s</kbd></td><td class="action">Stash</td></tr>
-          <tr class="row" data-s="salir volver quit"><td><kbd>q</kbd> <span class="then">/</span> <kbd>Esc</kbd></td><td class="action">Salir / volver</td></tr>
-        </tbody>
-      </table>
+    <div class="group">
+      <h3>Cambios en el margen</h3>
+      <p class="note">El margen marca lo que has cambiado respecto a Git: <strong style="color:var(--git-add)">▎</strong> línea nueva, <strong style="color:var(--git-change)">▎</strong> cambiada, <strong style="color:var(--git-del)">▁</strong> borradas.</p>
+      <div class="tcard">
+        <table>
+          <thead><tr><th>Tecla</th><th>Acción</th></tr></thead>
+          <tbody>
+            <tr class="row" data-b data-s="ver cambios dentro codigo git diff overlay"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>g</kbd><span class="then">→</span><kbd>d</kbd></td><td class="action">Ver los cambios dentro del código (otra vez para ocultarlos)</td></tr>
+            <tr class="row" data-s="cambio siguiente anterior git hunk"><td><kbd>]h</kbd> <span class="then">/</span> <kbd>[h</kbd></td><td class="action">Ir al cambio siguiente / anterior</td></tr>
+            <tr class="row" data-s="deshacer cambio linea git reset hunk gHgh ultimo commit"><td><kbd>gHgh</kbd></td><td class="action">Deshacer el cambio de esta zona: la deja como en el <em>stage</em> de Git (si no has hecho <em>stage</em>, como en el último commit)</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-    <p class="note">Las teclas cambian de significado según el panel. Consulta <kbd>?</kbd> antes de pulsar al azar en un repo importante.</p>
   </section>
 
-  <section id="npm">
-    <div class="head"><span class="num">10</span><h2>Node, NPM y Vite</h2></div>
-    <div class="codeblock"><span class="c"># ver versiones</span>
-npm --version
-node --version
-
-<span class="c"># crear un proyecto Vite en el directorio actual</span>
-npm create vite@latest .
-
-<span class="c"># ejecutar un script de package.json (ej. arrancar el proyecto)</span>
-npm run dev</div>
-    <p class="note">El símbolo <code class="inline">^</code> delante de una versión en <code class="inline">package.json</code> significa "esta versión o cualquier posterior compatible", no una versión fija. Para un archivo suelto <code class="inline">.js</code> o <code class="inline">.ts</code> basta con <kbd>Espacio</kbd><span class="then">→</span><kbd>r</kbd>.</p>
+  <section id="markdown">
+    <div class="head"><h2>Markdown y ortografía</h2></div>
+    <p class="sub">La ortografía (español e inglés) funciona en Markdown, texto y mensajes de commit. Las faltas salen en rojo.</p>
+    <div class="group">
+      <div class="tcard">
+        <table>
+          <thead><tr><th>Atajo</th><th>Acción</th></tr></thead>
+          <tbody>
+            <tr class="row" data-b data-s="leer markdown mdcat visor md mr"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>m</kbd><span class="then">→</span><kbd>r</kbd></td><td class="action">Leer el Markdown actual con formato (guárdalo antes). Dentro: <kbd>r</kbd> recarga, <kbd>q</kbd> cierra</td></tr>
+            <tr class="row" data-b data-s="documentacion markdown elegir proyecto md readme"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>m</kbd><span class="then">→</span><kbd>d</kbd></td><td class="action">Elegir un Markdown del proyecto (README, apuntes…) y leerlo</td></tr>
+            <tr class="row" data-b data-s="corregir falta ortografia sugerencias"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>o</kbd><span class="then">→</span><kbd>c</kbd></td><td class="action">Corregir la falta (elige la sugerencia por número)</td></tr>
+            <tr class="row" data-s="falta siguiente anterior ortografia"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>o</kbd><span class="then">→</span><kbd>n</kbd> <span class="then">/</span> <kbd>p</kbd></td><td class="action">Ir a la falta siguiente / anterior</td></tr>
+            <tr class="row" data-s="anadir palabra correcta diccionario"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>o</kbd><span class="then">→</span><kbd>a</kbd></td><td class="action">Dar la palabra por buena</td></tr>
+            <tr class="row" data-s="activar desactivar ortografia"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>o</kbd><span class="then">→</span><kbd>t</kbd></td><td class="action">Activar / desactivar la ortografía</td></tr>
+            <tr class="row" data-s="ia agente enviar seleccion"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>a</kbd><span class="then">→</span><kbd>c</kbd></td><td class="action">Mandar la posición o la selección al agente de IA (con <code class="inline">--ia</code>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </section>
 
   <section id="problemas">
-    <div class="head"><span class="num">11</span><h2>Problemas frecuentes</h2></div>
-    <div class="tcard twrap">
-      <table>
-        <thead><tr><th>Situación</th><th>Solución</th></tr></thead>
-        <tbody>
-          <tr class="row" data-s="espacio escribe modo insercion"><td>Espacio escribe un espacio en vez de actuar</td><td class="action">Pulsa <kbd>Esc</kbd>: seguramente estás en modo insertar</td></tr>
-          <tr class="row" data-s="no se en que modo estoy"><td>No sé en qué modo estoy</td><td class="action">Pulsa <kbd>Esc</kbd>, siempre vuelve a modo normal</td></tr>
-          <tr class="row" data-s="espacio d duplicar no funciona"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>d</kbd> ya no duplica</td><td class="action">Ahora es <kbd>Espacio</kbd><span class="then">→</span><kbd>t</kbd><span class="then">→</span><kbd>d</kbd> (o <kbd>yyp</kbd>)</td></tr>
-          <tr class="row" data-s="command not found entorno-dev path"><td><code class="inline">entorno-dev: command not found</code></td><td class="action">Abre una terminal nueva o usa <code class="inline">~/entorno-nvim/bin/entorno-dev .</code></td></tr>
-          <tr class="row" data-s="actualizar falla error reinstalar cero"><td>Algo sigue fallando tras actualizar</td><td class="action"><code class="inline">./scripts/instalar-alumno.sh --comprobar</code> y manda el mensaje al profe. Último recurso: mover <code class="inline">~/entorno-nvim</code> a <code class="inline">entorno-nvim.antiguo</code> y clonar de nuevo</td></tr>
-          <tr class="row" data-s="servidor no instalado aviso lsp"><td>Aviso de que falta el servidor de un archivo</td><td class="action">Ejecuta <code class="inline">./scripts/actualizar.sh</code>: instala lo que falte</td></tr>
-          <tr class="row" data-s="formato guardar cambia codigo"><td>Al guardar me cambia el formato del código</td><td class="action">Es el formato automático. <kbd>Espacio</kbd><span class="then">→</span><kbd>u</kbd><span class="then">→</span><kbd>f</kbd> lo desactiva</td></tr>
-          <tr class="row" data-s="lazygit no hay repositorio git init espacio gg"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>g</kbd><span class="then">→</span><kbd>g</kbd> dice «Aquí no hay ningún repositorio Git»</td><td class="action">Abre un archivo del proyecto y repite. Si de verdad quieres crear uno: <code class="inline">git init</code></td></tr>
-          <tr class="row" data-s="volver pantalla inicio dashboard"><td>Quiero volver a la pantalla de inicio</td><td class="action"><kbd>:IFL</kbd></td></tr>
-          <tr class="row" data-s="conservar procesos desconectar salir"><td>Quiero conservarlo todo al desconectarme</td><td class="action"><kbd>Ctrl+a</kbd><span class="then">→</span><kbd>d</kbd> antes de salir</td></tr>
-        </tbody>
-      </table>
+    <div class="head"><h2>Problemas frecuentes</h2></div>
+    <div class="group">
+      <div class="tcard">
+        <table>
+          <thead><tr><th>Me pasa que…</th><th>Solución</th></tr></thead>
+          <tbody>
+            <tr class="row" data-b data-s="espacio escribe modo insercion letras"><td>Las teclas escriben letras en vez de hacer cosas</td><td class="action">Estás en modo insertar: pulsa <kbd>Esc</kbd></td></tr>
+            <tr class="row" data-b data-s="no se en que modo estoy"><td>No sé en qué modo estoy</td><td class="action">Mira abajo a la izquierda. <kbd>Esc</kbd> siempre vuelve a NORMAL</td></tr>
+            <tr class="row" data-b data-s="cuadros iconos raros fuente nerd font"><td>Veo cuadros en lugar de iconos</td><td class="action">Falta una Nerd Font (en WSL se instala en Windows). O escribe <code class="inline">:EntornoIconos 0</code></td></tr>
+            <tr class="row" data-b data-s="pegar explorador p no pega"><td>En el explorador, <kbd>p</kbd> ya no pega</td><td class="action">Desde la v1.2 es la vista previa. Para mover un archivo de carpeta, <kbd>u</kbd> y cambia la ruta</td></tr>
+            <tr class="row" data-b data-s="formato guardar cambia codigo"><td>Al guardar me cambia el código</td><td class="action">Es el formato automático. <kbd>Espacio</kbd><span class="then">→</span><kbd>u</kbd><span class="then">→</span><kbd>f</kbd> lo desactiva</td></tr>
+            <tr class="row" data-b data-s="volver pantalla inicio dashboard"><td>Quiero volver a la pantalla de inicio</td><td class="action"><kbd>:IFL</kbd></td></tr>
+            <tr class="row" data-b data-s="command not found entorno-dev path"><td><code class="inline">entorno-dev: command not found</code></td><td class="action">Abre una terminal nueva, o usa <code class="inline">~/entorno-nvim/bin/entorno-dev .</code></td></tr>
+            <tr class="row" data-s="espacio d duplicar no funciona"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>d</kbd> ya no duplica</td><td class="action">Ahora es <kbd>Espacio</kbd><span class="then">→</span><kbd>t</kbd><span class="then">→</span><kbd>d</kbd> (o <kbd>yyp</kbd>)</td></tr>
+            <tr class="row" data-s="lazygit no hay repositorio git init espacio gg"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>g</kbd><span class="then">→</span><kbd>g</kbd> dice «Aquí no hay ningún repositorio Git»</td><td class="action">Abre un archivo del proyecto y repite. Si de verdad quieres crear uno: <code class="inline">git init</code></td></tr>
+            <tr class="row" data-s="servidor no instalado aviso lsp"><td>Avisa de que falta el servidor de un tipo de archivo</td><td class="action"><code class="inline">./scripts/actualizar.sh</code> instala lo que falte</td></tr>
+            <tr class="row" data-s="actualizar falla error reinstalar cero"><td>Algo sigue fallando tras actualizar</td><td class="action"><code class="inline">./scripts/instalar-alumno.sh --comprobar</code> y manda el mensaje al profe. Último recurso: renombrar <code class="inline">~/entorno-nvim</code> a <code class="inline">entorno-nvim.antiguo</code> e instalar de nuevo</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </section>
 
-  <p id="empty" hidden>Sin resultados para esa búsqueda.</p>
+  <p id="empty" hidden>No hay nada con esa búsqueda. Prueba con otra palabra («copiar», «carpeta», «error»…).</p>
 
   <footer>
-    Chuleta de clase DWEC (2º DAW) a partir del repo <code class="inline">entorno-nvim</code> del profesor Isaías Fernández Lozano, actualizada con los cambios hasta el 15-11-2026 (v1.2.2). No sustituye la documentación oficial del repositorio ni su ayuda integrada (<kbd>Espacio ?</kbd> / <kbd>F1</kbd> / <kbd>Ctrl+a ?</kbd> / <kbd>g?</kbd>).
+    Chuleta de clase DWEC (2º DAW) a partir del repositorio <code class="inline">entorno-nvim</code> del profesor Isaías Fernández Lozano, actualizada con los cambios hasta el 15-11-2026 (v1.2.2). No sustituye la documentación oficial ni la ayuda integrada (<kbd>Espacio ?</kbd> / <kbd>F1</kbd> / <kbd>Ctrl+a ?</kbd> / <kbd>g?</kbd>).
   </footer>
 
 </div>
 
 <script>
 (function () {
+  var body = document.body;
   var search = document.getElementById('search');
   var empty = document.getElementById('empty');
+  var status = document.getElementById('status');
+  // Controles creados aquí para que no aparezcan en la versión de texto (F1 c)
+  var controls = document.querySelector('.controls');
+  var hint = document.createElement('span');
+  hint.className = 'hint';
+  hint.innerHTML = '<kbd>/</kbd>';
+  document.querySelector('.searchbox').appendChild(hint);
+  var level = document.createElement('div');
+  level.className = 'level';
+  level.setAttribute('role', 'group');
+  level.setAttribute('aria-label', 'Cantidad de atajos');
+  level.innerHTML = '<button type="button" id="lv-basico" aria-pressed="true">Básico</button><button type="button" id="lv-todo" aria-pressed="false">Todo</button>';
+  controls.appendChild(level);
+  var btnB = document.getElementById('lv-basico');
+  var btnT = document.getElementById('lv-todo');
   var sections = Array.prototype.slice.call(document.querySelectorAll('section'));
+  var allRows = Array.prototype.slice.call(document.querySelectorAll('tr.row'));
+  var advCount = allRows.filter(function (r) { return !r.hasAttribute('data-b'); }).length;
 
-  function filter() {
-    var q = search.value.trim().toLowerCase();
-    var anyVisible = false;
-
-    sections.forEach(function (section) {
-      var isEssentials = section.id === 'esenciales';
-      var items = Array.prototype.slice.call(
-        section.querySelectorAll(isEssentials ? '.ess-card' : 'tr.row')
-      );
-
-      if (!q) {
-        items.forEach(function (el) { el.hidden = false; });
-        section.hidden = false;
-        anyVisible = true;
-        return;
-      }
-
-      var visibleCount = 0;
-      items.forEach(function (el) {
-        var haystack = ((el.dataset.s || '') + ' ' + el.textContent).toLowerCase();
-        var match = haystack.indexOf(q) !== -1;
-        el.hidden = !match;
-        if (match) visibleCount++;
-      });
-
-      section.hidden = visibleCount === 0;
-      if (visibleCount > 0) anyVisible = true;
-    });
-
-    empty.hidden = anyVisible;
+  function norm(s) {
+    return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   }
 
-  search.addEventListener('input', filter);
+  // Nivel: Básico / Todo (recordado en este navegador)
+  function setLevel(basico, save) {
+    body.classList.toggle('basico', basico);
+    btnB.setAttribute('aria-pressed', String(basico));
+    btnT.setAttribute('aria-pressed', String(!basico));
+    if (save) { try { localStorage.setItem('chuleta-nivel', basico ? 'basico' : 'todo'); } catch (e) {} }
+    refresh();
+  }
+  btnB.addEventListener('click', function () { setLevel(true, true); });
+  btnT.addEventListener('click', function () { setLevel(false, true); });
+
+  // Resaltado de coincidencias sin tener en cuenta tildes
+  function clearMarks(root) {
+    root.querySelectorAll('mark').forEach(function (m) {
+      var p = m.parentNode;
+      p.replaceChild(document.createTextNode(m.textContent), m);
+      p.normalize();
+    });
+  }
+  function markIn(root, q) {
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    var nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(function (node) {
+      var text = node.nodeValue;
+      var n = norm(text);
+      if (n.length !== text.length) return;
+      var i = n.indexOf(q);
+      if (i === -1) return;
+      var frag = document.createDocumentFragment();
+      var last = 0;
+      while (i !== -1) {
+        frag.appendChild(document.createTextNode(text.slice(last, i)));
+        var m = document.createElement('mark');
+        m.textContent = text.slice(i, i + q.length);
+        frag.appendChild(m);
+        last = i + q.length;
+        i = n.indexOf(q, last);
+      }
+      frag.appendChild(document.createTextNode(text.slice(last)));
+      node.parentNode.replaceChild(frag, node);
+    });
+  }
+
+  function visible(el) { return el.offsetParent !== null || el.getClientRects().length > 0; }
+
+  function refresh() {
+    var q = norm(search.value.trim());
+    body.classList.toggle('buscando', !!q);
+    var total = 0;
+
+    sections.forEach(function (section) {
+      var items = Array.prototype.slice.call(section.querySelectorAll('tr.row, .task'));
+      clearMarks(section);
+      section.hidden = false;
+      if (!q) {
+        items.forEach(function (el) { el.hidden = false; });
+        section.querySelectorAll('.group').forEach(function (g) { g.hidden = false; });
+        return;
+      }
+      if (!items.length) { section.hidden = true; return; }
+      items.forEach(function (el) {
+        var hay = norm((el.dataset.s || '') + ' ' + el.textContent);
+        var match = hay.indexOf(q) !== -1;
+        el.hidden = !match;
+        if (match) markIn(el, q);
+      });
+      // Ocultar grupos y tablas sin filas visibles
+      section.querySelectorAll('.group').forEach(function (g) {
+        var rows = g.querySelectorAll('tr.row');
+        if (!rows.length) { g.hidden = true; return; }
+        g.hidden = false;
+        var any = Array.prototype.some.call(rows, visible);
+        g.hidden = !any;
+      });
+      var shown = items.filter(visible).length;
+      total += shown;
+      section.hidden = shown === 0;
+    });
+
+    empty.hidden = !q || total > 0;
+    if (q) {
+      status.textContent = total + (total === 1 ? ' resultado' : ' resultados') + ' · Esc para borrar';
+    } else if (body.classList.contains('basico')) {
+      status.textContent = 'Modo básico: ' + advCount + ' atajos avanzados ocultos. Pulsa «Todo» para verlos.';
+    } else {
+      status.textContent = '';
+    }
+  }
+
+  search.addEventListener('input', refresh);
+  search.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { search.value = ''; refresh(); search.blur(); }
+  });
+  document.addEventListener('keydown', function (e) {
+    var t = e.target;
+    if (e.key === '/' && t.tagName !== 'INPUT' && t.tagName !== 'TEXTAREA' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      search.focus();
+      search.select();
+    }
+  });
+
+  // Botón de copiar en los bloques de comandos (sin las líneas de comentario)
+  document.querySelectorAll('.codeblock').forEach(function (block) {
+    var wrap = document.createElement('div');
+    wrap.className = 'codewrap';
+    block.parentNode.insertBefore(wrap, block);
+    wrap.appendChild(block);
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'copy';
+    btn.textContent = 'Copiar';
+    wrap.appendChild(btn);
+    btn.addEventListener('click', function () {
+      var text = block.innerText.split('\n').filter(function (l) {
+        return l.trim() && l.trim().charAt(0) !== '#';
+      }).join('\n');
+      function done(ok) {
+        btn.textContent = ok ? 'Copiado' : 'Selecciónalo';
+        setTimeout(function () { btn.textContent = 'Copiar'; }, 1600);
+      }
+      function fallback() {
+        var r = document.createRange();
+        r.selectNodeContents(block);
+        var s = window.getSelection();
+        s.removeAllRanges();
+        s.addRange(r);
+        done(false);
+      }
+      try {
+        navigator.clipboard.writeText(text).then(function () { done(true); }, fallback);
+      } catch (e) { fallback(); }
+    });
+  });
+
+  // Esquemas: se insertan aquí para que no salgan como imagen en la versión de texto
+  var FIGS = {"tmux": "<svg viewBox=\"0 0 320 200\" role=\"img\" aria-labelledby=\"fig-tmux-t\"><title id=\"fig-tmux-t\">Paneles: editor arriba a la izquierda, agente arriba a la derecha, terminal abajo</title><rect class=\"frame\" x=\"1\" y=\"1\" width=\"318\" height=\"198\" rx=\"8\"/><rect class=\"p-editor\" x=\"10\" y=\"10\" width=\"206\" height=\"140\" rx=\"5\"/><rect class=\"p-agent\" x=\"222\" y=\"10\" width=\"88\" height=\"140\" rx=\"5\"/><rect class=\"p-term\" x=\"10\" y=\"156\" width=\"300\" height=\"34\" rx=\"5\"/><text x=\"113\" y=\"70\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\">Editor</text><text x=\"113\" y=\"92\" text-anchor=\"middle\" font-size=\"12\" class=\"t-key\">Ctrl+a → n</text><text x=\"266\" y=\"70\" text-anchor=\"middle\" font-size=\"12\" font-weight=\"700\">Agente IA</text><text x=\"266\" y=\"88\" text-anchor=\"middle\" font-size=\"11\" class=\"t-key\">Ctrl+a → a</text><text x=\"266\" y=\"104\" text-anchor=\"middle\" font-size=\"10\" class=\"t-muted\">solo con --ia</text><text x=\"40\" y=\"178\" font-size=\"12\" font-weight=\"700\">Terminal</text><text x=\"118\" y=\"178\" font-size=\"12\" class=\"t-key\">Ctrl+a → t</text><text x=\"208\" y=\"178\" font-size=\"10\" class=\"t-muted\">npm run dev, git…</text></svg>", "modos": "<svg viewBox=\"0 0 320 200\" role=\"img\" aria-labelledby=\"fig-modos-t\"><title id=\"fig-modos-t\">Modos de Neovim: normal en el centro, insertar y visual alrededor</title><defs><marker id=\"ah\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path class=\"arrowhead\" d=\"M0,0 L10,5 L0,10 z\"/></marker></defs><rect class=\"node-main\" x=\"110\" y=\"76\" width=\"100\" height=\"48\" rx=\"10\"/><text x=\"160\" y=\"98\" text-anchor=\"middle\" font-size=\"13\" font-weight=\"700\">NORMAL</text><text x=\"160\" y=\"114\" text-anchor=\"middle\" font-size=\"9\" class=\"t-muted\">moverse y atajos</text><rect class=\"node\" x=\"8\" y=\"12\" width=\"104\" height=\"44\" rx=\"10\"/><text x=\"60\" y=\"32\" text-anchor=\"middle\" font-size=\"12\" font-weight=\"700\">INSERTAR</text><text x=\"60\" y=\"47\" text-anchor=\"middle\" font-size=\"9\" class=\"t-muted\">escribir texto</text><rect class=\"node\" x=\"208\" y=\"12\" width=\"104\" height=\"44\" rx=\"10\"/><text x=\"260\" y=\"32\" text-anchor=\"middle\" font-size=\"12\" font-weight=\"700\">VISUAL</text><text x=\"260\" y=\"47\" text-anchor=\"middle\" font-size=\"9\" class=\"t-muted\">seleccionar</text><rect class=\"node\" x=\"110\" y=\"152\" width=\"100\" height=\"40\" rx=\"10\"/><text x=\"160\" y=\"170\" text-anchor=\"middle\" font-size=\"12\" font-weight=\"700\">COMANDO</text><text x=\"160\" y=\"184\" text-anchor=\"middle\" font-size=\"9\" class=\"t-muted\">:w :q :vs</text><path class=\"arrow\" d=\"M118 80 L84 58\" marker-end=\"url(#ah)\"/><path class=\"arrow\" d=\"M70 58 L106 92\" marker-end=\"url(#ah)\"/><text x=\"66\" y=\"84\" font-size=\"11\" class=\"t-key\">i a o</text><text x=\"36\" y=\"104\" font-size=\"11\" class=\"t-key\">Esc · jk</text><path class=\"arrow\" d=\"M202 80 L236 58\" marker-end=\"url(#ah)\"/><path class=\"arrow\" d=\"M250 58 L214 92\" marker-end=\"url(#ah)\"/><text x=\"226\" y=\"84\" font-size=\"11\" class=\"t-key\">v V</text><text x=\"254\" y=\"104\" font-size=\"11\" class=\"t-key\">Esc</text><path class=\"arrow\" d=\"M150 126 L150 150\" marker-end=\"url(#ah)\"/><path class=\"arrow\" d=\"M170 150 L170 126\" marker-end=\"url(#ah)\"/><text x=\"128\" y=\"143\" font-size=\"11\" class=\"t-key\" text-anchor=\"end\">:</text><text x=\"178\" y=\"143\" font-size=\"11\" class=\"t-key\">Enter · Esc</text></svg>"};
+  document.querySelectorAll('.svgfig').forEach(function (el) { el.innerHTML = FIGS[el.dataset.fig] || ''; });
+
+  var saved = null;
+  try { saved = localStorage.getItem('chuleta-nivel'); } catch (e) {}
+  setLevel(saved !== 'todo', false);
 })();
 </script>
 </body>
