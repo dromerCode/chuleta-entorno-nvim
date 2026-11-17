@@ -258,7 +258,7 @@
   <header class="top">
     <div class="row1">
       <h1>Chuleta Entorno-Nvim · DWEC</h1>
-      <span class="tag">tmux · neovim · git · npm · act. 08-11-2026</span>
+      <span class="tag">tmux · neovim · git · npm · act. 15-11-2026</span>
     </div>
     <input id="search" type="search" placeholder="Buscar un atajo o comando… (ej. “snippet”, “comentar”, “ejecutar”)" autocomplete="off">
     <nav class="chips">
@@ -290,6 +290,7 @@
         <li>TypeScript pone los <strong>puntos y coma</strong> que falten al guardar. <kbd>Espacio</kbd><span class="then">→</span><kbd>u</kbd><span class="then">→</span><kbd>f</kbd> lo desactiva.</li>
         <li>Esta chuleta, desde Neovim: <kbd>F1</kbd> y luego <kbd>c</kbd> (dentro de tmux) o <kbd>w</kbd> (en el navegador).</li>
         <li><code class="inline">entorno-dev .</code> abre la carpeta en la que estás, aunque sea una subcarpeta de un repositorio.</li>
+        <li>En el explorador, <kbd>p</kbd> ahora abre una <strong>vista previa</strong> del archivo (ya no pega). <code class="inline">:EntornoIconos 0</code> quita los iconos si te salen cuadros.</li>
         <li>LazyGit muestra los cambios con colores y números de línea si tienes <code class="inline">git-delta</code> instalado (opcional).</li>
       </ul>
     </div>
@@ -503,7 +504,7 @@ entorno-dev .
       <table>
         <thead><tr><th>Atajo</th><th>Acción</th></tr></thead>
         <tbody>
-          <tr class="row" data-s="guardar"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>w</kbd></td><td class="action">Guardar (formatea solo TS, JS, HTML, CSS, JSON…)</td></tr>
+          <tr class="row" data-s="guardar"><td><kbd>Espacio</kbd><span class="then">→</span><kbd>w</kbd></td><td class="action">Guardar (formatea solo TS, JS, HTML, CSS, JSON, Python…; en TS añade los <code class="inline">;</code> que falten)</td></tr>
           <tr class="row" data-s="jk salir insercion escape"><td><kbd>jk</kbd> <span class="then">(en insertar)</span></td><td class="action">Volver a modo normal escribiendo j y k seguidos y rápido</td></tr>
           <tr class="row" data-s="esc limpiar busqueda resaltado"><td><kbd>Esc</kbd></td><td class="action">Volver a modo normal y quitar el resaltado de la búsqueda</td></tr>
           <tr class="row" data-s="insertar antes despues nueva linea"><td><kbd>i</kbd> <span class="then">/</span> <kbd>a</kbd> <span class="then">·</span> <kbd>o</kbd> <span class="then">/</span> <kbd>O</kbd></td><td class="action">Insertar antes / después del cursor · nueva línea debajo / encima</td></tr>
@@ -512,6 +513,7 @@ entorno-dev .
           <tr class="row" data-s="cerrar ventana split dividida"><td><kbd>:q</kbd> <span class="then">(en la ventana)</span></td><td class="action">Cerrar esa ventana dividida (el archivo sigue abierto en las demás)</td></tr>
           <tr class="row" data-s="terminal salir modo terminal esc esc"><td><kbd>Esc</kbd> <kbd>Esc</kbd> <span class="then">(terminal)</span></td><td class="action">Salir del modo terminal de Neovim</td></tr>
           <tr class="row" data-s="dashboard inicio ifl"><td><kbd>:IFL</kbd></td><td class="action">Volver a la pantalla de inicio</td></tr>
+          <tr class="row" data-s="iconos nerd font cuadros entornoiconos"><td><kbd>:EntornoIconos</kbd> <span class="then">0 / 1</span></td><td class="action">Ver si la fuente muestra bien los iconos / quitarlos / ponerlos (se guarda; útil si salen cuadros)</td></tr>
         </tbody>
       </table>
     </div>
@@ -635,6 +637,7 @@ entorno-dev .
           <tr class="row" data-s="crear archivo carpeta nuevo"><td><kbd>a</kbd></td><td class="action">Crear archivo o carpeta (termina en / para carpeta)</td></tr>
           <tr class="row" data-s="renombrar archivo"><td><kbd>r</kbd></td><td class="action">Renombrar</td></tr>
           <tr class="row" data-s="borrar archivo eliminar confirmar"><td><kbd>d</kbd> <span class="then">(confirmar)</span></td><td class="action">Borrar (no es papelera)</td></tr>
+          <tr class="row" data-s="vista previa previsualizar imagen archivo p"><td><kbd>p</kbd></td><td class="action">Vista previa del archivo sin abrirlo (otra vez para cerrarla). Ya no es «pegar»</td></tr>
           <tr class="row" data-s="copiar nombre archivo yank"><td><kbd>y</kbd></td><td class="action">Copiar el nombre del archivo</td></tr>
           <tr class="row" data-s="filtro filtrar limpiar"><td><kbd>f</kbd> <span class="then">/</span> <kbd>F</kbd></td><td class="action">Filtro interactivo / limpiar filtro</td></tr>
           <tr class="row" data-s="refrescar recargar arbol"><td><kbd>R</kbd></td><td class="action">Refrescar el árbol</td></tr>
@@ -717,7 +720,7 @@ npm run dev</div>
   <p id="empty" hidden>Sin resultados para esa búsqueda.</p>
 
   <footer>
-    Chuleta de clase DWEC (2º DAW) a partir del repo <code class="inline">entorno-nvim</code> del profesor Isaías Fernández Lozano, actualizada con los cambios hasta el 08-11-2026. No sustituye la documentación oficial del repositorio ni su ayuda integrada (<kbd>Espacio ?</kbd> / <kbd>F1</kbd> / <kbd>Ctrl+a ?</kbd> / <kbd>g?</kbd>).
+    Chuleta de clase DWEC (2º DAW) a partir del repo <code class="inline">entorno-nvim</code> del profesor Isaías Fernández Lozano, actualizada con los cambios hasta el 15-11-2026 (v1.2.2). No sustituye la documentación oficial del repositorio ni su ayuda integrada (<kbd>Espacio ?</kbd> / <kbd>F1</kbd> / <kbd>Ctrl+a ?</kbd> / <kbd>g?</kbd>).
   </footer>
 
 </div>
